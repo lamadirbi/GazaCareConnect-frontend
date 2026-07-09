@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { useRequireAuth } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
+import { PageLoadingGate } from "@/components/PageLoadingGate";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
@@ -24,7 +25,7 @@ type MedicalProfile = {
 type ProfileResponse = { profile: MedicalProfile };
 
 export default function ProfilePage() {
-  const { user } = useRequireAuth();
+  const { user, loading: authLoading } = useRequireAuth();
   const [profile, setProfile] = useState<MedicalProfile | null>(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -89,16 +90,14 @@ export default function ProfilePage() {
   }
 
   return (
+    <PageLoadingGate
+      loading={authLoading || loading}
+      message="جاري تحميل الملف الطبي..."
+    >
     <div className="min-h-screen bg-transparent">
       <AppHeader title="الملف الطبي" backHref="/dashboard" userRole={user?.role} />
 
       <main className="mx-auto w-full max-w-5xl px-4 py-8">
-        {loading ? (
-          <div className="text-sm text-zinc-600 dark:text-zinc-400">
-            جاري التحميل...
-          </div>
-        ) : null}
-
         {error ? (
           <div className="mb-4">
             <Alert variant="error">{error}</Alert>
@@ -115,7 +114,7 @@ export default function ProfilePage() {
           <Card>
             <CardBody className="p-6">
             <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              هذه المعلومات تظهر للطبيب عند مراجعة الاستشارة.
+              هذه البيانات يراها الطبيب عند مراجعة استشارتك.
             </div>
 
             <div className="mt-4 grid gap-3 text-sm text-zinc-700 dark:text-zinc-200 sm:grid-cols-2">
@@ -290,6 +289,7 @@ export default function ProfilePage() {
         ) : null}
       </main>
     </div>
+    </PageLoadingGate>
   );
 }
 

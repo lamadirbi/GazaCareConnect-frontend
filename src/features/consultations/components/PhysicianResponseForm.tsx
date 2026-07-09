@@ -33,7 +33,7 @@ export function PhysicianResponseForm({
         className="rounded-xl border border-(--border) bg-(--surface) px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring) dark:text-zinc-50"
       />
       <p className="text-xs text-(--muted)">
-        «للمراجعة» يبقي الحالة لديك ضمن قيد المعالجة. «إنهاء» ينقلها للمنتهية ويُعدّ الرد نهائياً للمريض.
+        «للمراجعة» تُبقي الاستشارة قيد المعالجة. «إنهاء» يحوّلها إلى مكتملة ويرسل الرد للمراجع.
       </p>
       <div className="flex flex-col gap-2 sm:flex-row">
         <Button

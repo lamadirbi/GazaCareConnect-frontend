@@ -21,7 +21,7 @@ export function ConsultationStatusBadge({ status, physicianResponse, className }
       ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-100"
       : label === "قيد المراجعة"
         ? "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100"
-        : "border-zinc-200 bg-white text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100";
+        : "border-red-200 bg-red-50 text-red-800 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-100";
 
   return <span className={`${base} ${tone} ${className ?? ""}`}>{label}</span>;
 }

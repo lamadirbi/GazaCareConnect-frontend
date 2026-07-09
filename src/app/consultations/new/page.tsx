@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { useRequireAuth } from "@/lib/auth";
+import { QUEUE_ASSIGNMENT_LABEL } from "@/features/consultations";
 import { uploadMedicalFiles } from "@/lib/medicalFiles";
 import { AppHeader } from "@/components/AppHeader";
-import { Card, CardBody } from "@/components/ui/Card";
+import { AppLoadingScreen } from "@/components/AppLoadingScreen";
+import { PageLoadingGate } from "@/components/PageLoadingGate";
+import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { SelectedLocalFilesList } from "@/features/consultations";
@@ -17,6 +21,7 @@ type Consultation = {
   question_text: string;
   status: "pending" | "completed";
   submitted_at: string;
+  assignment_mode?: "queue" | "direct";
 };
 
 type CreateResponse = { consultation: Consultation };
@@ -31,36 +36,99 @@ type MedicalProfile = {
 };
 type ProfileResponse = { profile: MedicalProfile };
 
+type VerifiedPhysician = {
+  id: number;
+  user_id: number;
+  specialty: string;
+  user?: { id: number; name: string };
+};
+
+type Paginated<T> = { data: T[] };
+
+function FormSectionHead({
+  step,
+  title,
+  description,
+}: {
+  step: number;
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="gc-form-section-head">
+      <span className="gc-form-step" aria-hidden>
+        {step}
+      </span>
+      <div>
+        <h2 className="gc-form-section-title">{title}</h2>
+        {description ? <p className="gc-form-section-desc">{description}</p> : null}
+      </div>
+    </div>
+  );
+}
+
 export default function NewConsultationPage() {
-  const { user } = useRequireAuth();
+  return (
+    <Suspense fallback={<AppLoadingScreen message="جاري فتح الصفحة..." />}>
+      <NewConsultationContent />
+    </Suspense>
+  );
+}
+
+function NewConsultationContent() {
+  const searchParams = useSearchParams();
+  const initialMode = searchParams.get("mode") === "direct" ? "direct" : "queue";
+  const initialPhysicianId = searchParams.get("physician_id");
+
+  const { user, loading: authLoading } = useRequireAuth({ allowedRoles: ["patient"] });
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [assignmentMode, setAssignmentMode] = useState<"queue" | "direct">(initialMode);
+  const [selectedPhysicianId, setSelectedPhysicianId] = useState<string>(
+    initialPhysicianId ?? ""
+  );
+  const [physicians, setPhysicians] = useState<VerifiedPhysician[]>([]);
+  const [bootLoading, setBootLoading] = useState(true);
 
   const [profile, setProfile] = useState<MedicalProfile | null>(null);
-
   const [files, setFiles] = useState<File[]>([]);
   const [uploadedFileIds, setUploadedFileIds] = useState<number[]>([]);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
     let mounted = true;
-    apiFetch<ProfileResponse>(`/medical-profile`)
-      .then((res) => {
+    Promise.all([
+      apiFetch<ProfileResponse>(`/medical-profile`),
+      apiFetch<Paginated<VerifiedPhysician>>("/verified-physicians"),
+    ])
+      .then(([profileRes, physiciansRes]) => {
         if (!mounted) return;
-        if (!res.ok) return;
-        setProfile(res.data.profile);
+        if (profileRes.ok) setProfile(profileRes.data.profile);
+        if (physiciansRes.ok) setPhysicians(physiciansRes.data.data ?? []);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (mounted) setBootLoading(false);
+      });
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [authLoading]);
+
+  const selectedPhysician = useMemo(
+    () => physicians.find((p) => String(p.user?.id ?? "") === selectedPhysicianId),
+    [physicians, selectedPhysicianId]
+  );
 
   const canSubmit = useMemo(() => {
     if (text.trim().length < 10) return false;
+    if (assignmentMode === "direct" && !selectedPhysicianId) return false;
     return true;
-  }, [text]);
+  }, [text, assignmentMode, selectedPhysicianId]);
+
+  const charCount = text.trim().length;
 
   async function uploadSelectedFiles() {
     if (files.length === 0) return [];
@@ -93,6 +161,9 @@ export default function NewConsultationPage() {
       body: JSON.stringify({
         question_text: text,
         file_ids: ids.length ? ids : undefined,
+        assignment_mode: assignmentMode,
+        physician_id:
+          assignmentMode === "direct" ? Number(selectedPhysicianId) : undefined,
       }),
     });
 
@@ -106,112 +177,200 @@ export default function NewConsultationPage() {
   }
 
   return (
+    <PageLoadingGate
+      loading={authLoading || bootLoading}
+      message="جاري تجهيز نموذج الاستشارة..."
+    >
     <div className="min-h-screen bg-transparent">
       <AppHeader title="استشارة جديدة" backHref="/consultations" userRole={user?.role} />
 
       <main className="mx-auto w-full max-w-3xl px-4 py-8">
-        <Card>
-          <CardBody className="p-6">
-            <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-              اكتب تفاصيل الاستشارة
-            </h1>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              اذكر الأعراض، مدتها، وأي تفاصيل مهمة.
-            </p>
+        <header className="mb-6">
+          <h1 className="text-xl font-bold text-foreground">إرسال استشارة</h1>
+          <p className="mt-1.5 text-sm leading-6 text-(--muted)">
+            اختر طريقة الإرسال، اكتب سؤالك، وأرفق الملفات عند الحاجة.
+          </p>
+        </header>
 
-            <form className="mt-6 grid gap-4" onSubmit={submit}>
-            {profile ? (
-              <MedicalProfileSummaryCard profile={profile} editHref="/profile" />
-            ) : null}
+        <form className="grid gap-5" onSubmit={submit}>
+          <Card className="overflow-hidden">
+            <div className="h-1 bg-gradient-to-l from-(--gc-accent) to-[#0b6e7a]" />
+            <div className="p-5 sm:p-6">
+              <FormSectionHead
+                step={1}
+                title="طريقة الإرسال"
+                description="لأول طبيب متاح، أو لطبيب تختاره."
+              />
 
-            <label className="grid gap-1">
-              <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                نص الاستشارة
-              </span>
+              <div className="gc-assignment-grid">
+                <label className="gc-assignment-option">
+                  <input
+                    type="radio"
+                    name="assignment_mode"
+                    checked={assignmentMode === "queue"}
+                    onChange={() => setAssignmentMode("queue")}
+                  />
+                  <span className="gc-assignment-option-title">{QUEUE_ASSIGNMENT_LABEL}</span>
+                  <span className="gc-assignment-option-desc">
+                    تبقى بانتظار أول طبيب متاح لاستلامها.
+                  </span>
+                </label>
+
+                <label className="gc-assignment-option">
+                  <input
+                    type="radio"
+                    name="assignment_mode"
+                    checked={assignmentMode === "direct"}
+                    onChange={() => setAssignmentMode("direct")}
+                  />
+                  <span className="gc-assignment-option-title">طبيب محدّد</span>
+                  <span className="gc-assignment-option-desc">
+                    تُرسل مباشرة إلى الطبيب الذي تختاره.
+                  </span>
+                </label>
+              </div>
+
+              {assignmentMode === "direct" ? (
+                <div className="gc-assignment-direct-panel">
+                  <label className="grid gap-2">
+                    <span className="text-xs font-semibold text-(--muted)">اختر الطبيب</span>
+                    <select
+                      value={selectedPhysicianId}
+                      onChange={(e) => setSelectedPhysicianId(e.target.value)}
+                      required
+                      className="rounded-xl border border-(--border) bg-(--surface) px-3 py-2.5 text-sm"
+                    >
+                      <option value="">— اختر من القائمة —</option>
+                      {physicians.map((p) => (
+                        <option key={p.id} value={p.user?.id ?? ""}>
+                          {p.user?.name} — {p.specialty}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <Link
+                    href="/physicians"
+                    className="mt-2 inline-block text-xs font-semibold text-(--gc-accent) hover:underline"
+                  >
+                    تصفح الأطباء الموثّقين
+                  </Link>
+                  {selectedPhysician ? (
+                    <p className="mt-3 rounded-xl border border-sky-200/80 bg-sky-50/80 px-3 py-2.5 text-xs text-sky-900 dark:border-sky-900/40 dark:bg-sky-950/40 dark:text-sky-100">
+                      ستُرسل إلى د. {selectedPhysician.user?.name}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </Card>
+
+          {profile ? (
+            <Card className="overflow-hidden">
+              <div className="p-5 sm:p-6">
+                <FormSectionHead
+                  step={2}
+                  title="ملفك الطبي"
+                  description="يُرفق مع الاستشارة. راجع البيانات قبل الإرسال."
+                />
+                <MedicalProfileSummaryCard profile={profile} editHref="/profile" embedded />
+              </div>
+            </Card>
+          ) : null}
+
+          <Card className="overflow-hidden">
+            <div className="p-5 sm:p-6">
+              <FormSectionHead
+                step={profile ? 3 : 2}
+                title="سؤال الاستشارة"
+                description="صف أعراضك أو اكتب سؤالك الطبي."
+              />
+
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                rows={8}
+                rows={7}
                 minLength={10}
                 required
-                className="rounded-xl border border-(--border) bg-(--surface) px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring) dark:text-zinc-50"
+                placeholder="مثال: صداع منذ أسبوعين مع دوخة عند الوقوف. هل أحتاج فحوصات؟"
+                className="gc-consult-textarea"
               />
-            </label>
-
-            <label className="grid gap-1">
-              <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                ملفات مرفقة (اختياري)
-              </span>
-              <input
-                type="file"
-                multiple
-                onChange={(e) => {
-                  const picked = Array.from(e.target.files ?? []);
-                  e.target.value = "";
-                  if (!picked.length) return;
-                  setFiles((prev) => [...prev, ...picked]);
-                }}
-                className="block w-full text-sm text-zinc-700 file:mr-2 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-zinc-900 hover:file:bg-zinc-200 dark:text-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-50 dark:hover:file:bg-zinc-700"
-              />
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                يمكنك إرفاق{" "}
-                <span className="font-medium text-zinc-600 dark:text-zinc-300">
-                  عدة صور وPDF دفعة واحدة
-                </span>{" "}
-                (Ctrl أو Shift أثناء الاختيار)، أو استخدام الزر أكثر من مرة لإضافة دفعات أخرى.
+              <p className="mt-2 text-xs text-(--muted)">
+                {charCount < 10
+                  ? `أدخل 10 أحرف على الأقل (${charCount}/10)`
+                  : `${charCount} حرف`}
               </p>
-              {files.length ? (
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                  تم اختيار {files.length} ملف(ات)
-                  {uploadedFileIds.length ? ` — تم رفع ${uploadedFileIds.length}` : ""}
-                </div>
-              ) : null}
-            </label>
+            </div>
+          </Card>
 
-            {files.length ? (
-              <Card className="bg-white dark:bg-zinc-950">
-                <CardBody className="p-4 text-sm">
-                  <div className="mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                    الملفات المختارة
-                  </div>
+          <Card className="overflow-hidden">
+            <div className="p-5 sm:p-6">
+              <FormSectionHead
+                step={profile ? 4 : 3}
+                title="مرفقات (اختياري)"
+                description="تقارير، أشعة، أو تحاليل — PDF أو صورة."
+              />
+
+              <div className="gc-file-picker">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf"
+                  onChange={(e) => {
+                    const picked = Array.from(e.target.files ?? []);
+                    e.target.value = "";
+                    if (!picked.length) return;
+                    setFiles((prev) => [...prev, ...picked]);
+                  }}
+                />
+                {files.length ? (
+                  <p className="text-xs text-(--muted)">
+                    {files.length} ملف محدد
+                    {uploadedFileIds.length ? ` · تم رفع ${uploadedFileIds.length}` : ""}
+                  </p>
+                ) : (
+                  <p className="text-xs text-(--muted)">لم تُختَر ملفات بعد</p>
+                )}
+              </div>
+
+              {files.length ? (
+                <div className="mt-4 rounded-2xl border border-(--border) bg-(--surface-2) p-4">
+                  <div className="mb-2 text-sm font-semibold text-foreground">الملفات المحددة</div>
                   <SelectedLocalFilesList
                     files={files}
                     onRemoveAt={(idx) => setFiles((prev) => prev.filter((_, i) => i !== idx))}
                   />
-                  <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                    يمكنك حذف أي ملف قبل إرسال الاستشارة.
-                  </div>
-                </CardBody>
-              </Card>
-            ) : null}
-
-            {error ? (
-              <Alert variant="error">{error}</Alert>
-            ) : null}
-
-            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <Link href="/consultations" className="w-full sm:w-auto">
-                <Button variant="secondary" className="w-full sm:w-auto">
-                  رجوع
-                </Button>
-              </Link>
-              <Button
-                type="submit"
-                disabled={loading || uploading || !canSubmit}
-                className="w-full sm:w-auto"
-              >
-              {uploading
-                ? "جاري رفع الملفات..."
-                : loading
-                ? "جاري الإرسال..."
-                : "إرسال الاستشارة"}
-              </Button>
+                </div>
+              ) : null}
             </div>
-          </form>
-          </CardBody>
-        </Card>
+          </Card>
+
+          {error ? <Alert variant="error">{error}</Alert> : null}
+
+          <Card className="overflow-hidden">
+            <div className="p-5 sm:p-6">
+              <div className="gc-form-submit-bar">
+                <Link href="/consultations" className="w-full sm:w-auto">
+                  <Button variant="secondary" className="w-full sm:w-auto" type="button">
+                    إلغاء
+                  </Button>
+                </Link>
+                <Button
+                  type="submit"
+                  disabled={loading || uploading || !canSubmit}
+                  className="w-full sm:w-auto"
+                >
+                  {uploading
+                    ? "جاري رفع الملفات..."
+                    : loading
+                      ? "جاري الإرسال..."
+                      : "إرسال الاستشارة"}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </form>
       </main>
     </div>
+    </PageLoadingGate>
   );
 }
-

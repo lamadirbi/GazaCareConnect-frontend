@@ -21,10 +21,13 @@ type Props = {
 
 export function PhysicianQueueSection({ queue, loading, error, claimingId, onClaim }: Props) {
   return (
-    <section>
+    <section id="physician-queue" className="scroll-mt-28">
       <div className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-        الطابور (غير معيّنة)
+        استشارات بانتظار الاستلام
       </div>
+      <p className="mb-3 text-xs text-(--muted)">
+        استشارات لم يستلمها أي طبيب بعد — يمكنك استلام أي منها للمراجعة.
+      </p>
       <div className="grid gap-3">
         {queue.map((c) => (
           <Card key={c.id}>
@@ -36,7 +39,7 @@ export function PhysicianQueueSection({ queue, loading, error, claimingId, onCla
                   </div>
                   {c.patient?.name ? (
                     <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                      المريض: <span className="font-medium">{c.patient.name}</span>
+                      المراجع: <span className="font-medium">{c.patient.name}</span>
                     </div>
                   ) : null}
                   <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
@@ -58,7 +61,7 @@ export function PhysicianQueueSection({ queue, loading, error, claimingId, onCla
         ))}
 
         {!loading && !error && queue.length === 0 ? (
-          <Alert variant="info">لا يوجد طابور حالياً.</Alert>
+          <Alert variant="info">لا توجد استشارات بانتظار الاستلام حالياً.</Alert>
         ) : null}
       </div>
     </section>

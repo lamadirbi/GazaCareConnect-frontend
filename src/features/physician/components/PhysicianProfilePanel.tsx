@@ -3,20 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch, downloadWithAuth } from "@/lib/api";
 import { uploadMedicalFiles } from "@/lib/medicalFiles";
-import { Card, CardBody } from "@/components/ui/Card";
+import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { triggerBlobDownload } from "@/components/BlobDownload";
-
-type Consultation = {
-  id: number;
-  question_text: string;
-  status: "pending" | "completed";
-  submitted_at: string;
-  responded_at?: string | null;
-  physician_response?: string | null;
-  patient?: { id: number; name: string; role: string };
-};
 
 type CertificateFileRef = {
   id: number;
@@ -263,133 +253,194 @@ export function PhysicianProfilePanel({ initialProfile }: { initialProfile?: any
     triggerBlobDownload(res.data.blob, res.data.filename ?? fallbackName);
   }
 
+  function certFileIcon(f: CertificateFileRef) {
+    if (isCertificateFileImage(f)) return "صورة";
+    if (isCertificateFilePdf(f)) return "PDF";
+    return "ملف";
+  }
+
   return (
-    <Card>
-      <CardBody className="p-5">
-        <div className="flex items-start justify-between gap-4">
+    <Card className="overflow-hidden">
+      <div className="h-1 bg-gradient-to-l from-(--gc-accent) to-[#0b6e7a]" />
+
+      <div className="p-5 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">ملف الطبيب</div>
-            <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              هذه المعلومات ستظهر للمريض عند الرد على الاستشارة.
-            </div>
+            <h2 className="text-base font-bold text-foreground">ملف الطبيب</h2>
+            <p className="mt-1 text-xs leading-6 text-(--muted)">
+              تظهر للمراجع عند الرد على الاستشارة.
+            </p>
           </div>
+          {profile ? (
+            <Button
+              type="button"
+              variant={editingProfile ? "secondary" : "primary"}
+              size="sm"
+              onClick={() => {
+                setProfileMsg(null);
+                setEditingProfile((v) => !v);
+              }}
+            >
+              {editingProfile ? "إغلاق التعديل" : "تعديل الملف"}
+            </Button>
+          ) : null}
         </div>
 
         {profileMsg ? (
-          <div className="mt-3">
+          <div className="mt-4">
             <Alert variant={profileMsg.includes("تم") ? "success" : "info"}>{profileMsg}</Alert>
           </div>
         ) : null}
 
         {profile ? (
           <>
-            <div className="mt-4 grid gap-3 text-sm text-zinc-700 dark:text-zinc-200 sm:grid-cols-2">
-              <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">التخصص</div>
-                <div className="mt-1 font-medium">{profile.specialty?.trim() ? profile.specialty : "غير محدد"}</div>
-              </div>
-              <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 sm:col-span-2">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                  مرفقات الشهادة{certificateList.length > 1 ? ` (${certificateList.length})` : ""}
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <div className="gc-profile-field">
+                <div className="gc-profile-field-label">التخصص</div>
+                <div className="gc-profile-field-value">
+                  {profile.specialty?.trim() ? profile.specialty : "غير محدد"}
                 </div>
-                {certificateList.length ? (
-                  <p className="mt-1 text-xs text-(--muted)">يوجد مرفق (مرفقات) محفوظ.</p>
-                ) : (
-                  <div className="mt-1 text-sm font-medium text-(--muted)">غير مرفق</div>
-                )}
-                {certificateList.length ? (
-                  <div className="mt-3 grid gap-4 sm:grid-cols-2">
-                    {certificateList.map((cf, idx) => {
-                      const prev = certPreviewMap[cf.id];
-                      return (
-                        <div key={`${cf.id}-${idx}`} className="overflow-hidden rounded-xl border border-(--border) bg-(--surface)">
-                          {prev?.kind === "image" ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={prev.url} alt="" className="max-h-48 w-full object-contain" />
-                          ) : null}
-                          {prev?.kind === "pdf" ? (
-                            <div className="h-48">
-                              <iframe title="معاينة PDF" src={prev.url} className="h-full w-full border-0" />
-                            </div>
-                          ) : null}
-                          <div className="flex justify-end border-t border-(--border) px-2 py-2">
-                            <Button type="button" variant="secondary" size="sm" onClick={() => downloadCertificateFile(cf.id, cf.original_name)}>
-                              تنزيل
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : null}
               </div>
-              <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 sm:col-span-2">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">وصف الشهادة / المؤهل</div>
-                <div className="mt-1 whitespace-pre-wrap font-medium">{profile.certificate?.trim() ? profile.certificate : "—"}</div>
+
+              <div className="gc-profile-field sm:col-span-2">
+                <div className="gc-profile-field-label">عدد مرفقات الشهادة</div>
+                <div className="gc-profile-field-value">
+                  {certificateList.length
+                    ? `${certificateList.length} مرفق`
+                    : "لا توجد مرفقات"}
+                </div>
               </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-end">
-              <Button
-                type="button"
-                variant={editingProfile ? "secondary" : "primary"}
-                size="sm"
-                onClick={() => {
-                  setProfileMsg(null);
-                  setEditingProfile((v) => !v);
-                }}
-              >
-                {editingProfile ? "إخفاء التعديل" : "تعديل المعلومات"}
-              </Button>
+            <div className="mt-5">
+              <div className="gc-section-label mb-2">وصف المؤهل</div>
+              <div className="gc-physician-profile-text">
+                {profile.certificate?.trim() ? profile.certificate : "لم يُضف وصف بعد."}
+              </div>
             </div>
+
+            {certificateList.length ? (
+              <div className="mt-5">
+                <div className="gc-section-label mb-3">
+                  مرفقات الشهادة ({certificateList.length})
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {certificateList.map((cf, idx) => {
+                    const prev = certPreviewMap[cf.id];
+                    return (
+                      <div key={`${cf.id}-${idx}`} className="gc-cert-file-card">
+                        {prev ? (
+                          <div className="gc-cert-file-preview p-2">
+                            {prev.kind === "image" ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={prev.url} alt="" />
+                            ) : (
+                              <iframe title={`معاينة ${cf.original_name}`} src={prev.url} />
+                            )}
+                          </div>
+                        ) : null}
+                        <div className="gc-cert-file-row">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <span className="gc-cert-file-icon">{certFileIcon(cf)}</span>
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-semibold text-foreground">
+                                {cf.original_name}
+                              </div>
+                              <div className="mt-0.5 text-xs text-(--muted)">مرفق #{idx + 1}</div>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="shrink-0"
+                            onClick={() => downloadCertificateFile(cf.id, cf.original_name)}
+                          >
+                            تنزيل
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <p className="mt-5 rounded-xl border border-dashed border-(--border) bg-(--surface-2) px-4 py-3 text-xs text-(--muted)">
+                لا توجد شهادات مرفقة. يمكنك إضافتها من «تعديل الملف».
+              </p>
+            )}
 
             {editingProfile ? (
-              <div className="mt-4 grid gap-4 rounded-2xl border border-(--border) bg-(--surface-2) p-4">
-                <label className="grid gap-1">
-                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">التخصص</span>
+              <div className="gc-physician-edit-panel grid gap-4">
+                <div className="text-sm font-semibold text-foreground">تعديل معلومات الملف</div>
+
+                <label className="grid gap-1.5">
+                  <span className="text-sm font-medium text-foreground">التخصص</span>
                   <input
                     value={profile.specialty}
                     onChange={(e) => setProfile((p) => (p ? { ...p, specialty: e.target.value } : p))}
-                    className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring) dark:text-zinc-50"
+                    className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-(--ring)"
                   />
                 </label>
 
-                <label className="grid gap-1">
-                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">وصف الشهادة / المؤهل (اختياري)</span>
+                <label className="grid gap-1.5">
+                  <span className="text-sm font-medium text-foreground">وصف المؤهل (اختياري)</span>
                   <textarea
                     value={profile.certificate}
                     onChange={(e) => setProfile((p) => (p ? { ...p, certificate: e.target.value } : p))}
                     rows={4}
-                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-800 dark:bg-black dark:text-zinc-50 dark:focus:ring-white/10"
+                    className="gc-consult-textarea min-h-[6.5rem]"
                   />
                 </label>
 
                 <div className="grid gap-2">
-                  <div className="text-sm font-medium text-zinc-800 dark:text-zinc-200">مرفقات الشهادة (اختياري — صور أو PDF، أكثر من ملف)</div>
-                  <input
-                    type="file"
-                    multiple
-                    aria-label="مرفقات الشهادة"
-                    accept="image/*,application/pdf"
-                    onChange={(e) => {
-                      const picked = Array.from(e.target.files ?? []);
-                      e.target.value = "";
-                      if (picked.length) void uploadCertificateFiles(picked);
-                    }}
-                    className="block w-full text-sm text-zinc-700 file:mr-2 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-zinc-900 hover:file:bg-zinc-200 dark:text-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-50 dark:hover:file:bg-zinc-700"
-                  />
-                  {certificateUploading ? <div className="text-xs text-zinc-500 dark:text-zinc-400">جاري رفع الملفات...</div> : null}
+                  <span className="text-sm font-medium text-foreground">
+                    مرفقات الشهادة (صور أو PDF)
+                  </span>
+                  <div className="gc-file-picker">
+                    <input
+                      type="file"
+                      multiple
+                      aria-label="مرفقات الشهادة"
+                      accept="image/*,application/pdf"
+                      onChange={(e) => {
+                        const picked = Array.from(e.target.files ?? []);
+                        e.target.value = "";
+                        if (picked.length) void uploadCertificateFiles(picked);
+                      }}
+                    />
+                    {certificateUploading ? (
+                      <p className="text-xs text-(--muted)">جاري رفع الملفات...</p>
+                    ) : (
+                      <p className="text-xs text-(--muted)">يمكنك اختيار أكثر من ملف</p>
+                    )}
+                  </div>
 
                   {certificateList.length ? (
-                    <ul className="mt-1 grid gap-2 text-sm">
+                    <ul className="grid gap-2">
                       {certificateList.map((cf, idx) => (
-                        <li key={`${cf.id}-${idx}`} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-(--border) bg-(--surface) px-3 py-2">
-                          <span className="min-w-0 truncate text-xs text-(--muted)">#{idx + 1} — {cf.original_name}</span>
+                        <li
+                          key={`${cf.id}-${idx}`}
+                          className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-(--border) bg-(--surface) px-3 py-2.5"
+                        >
+                          <span className="min-w-0 truncate text-xs font-medium text-foreground">
+                            {cf.original_name}
+                          </span>
                           <div className="flex shrink-0 gap-1">
-                            <Button type="button" variant="secondary" size="sm" onClick={() => downloadCertificateFile(cf.id, cf.original_name)}>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => downloadCertificateFile(cf.id, cf.original_name)}
+                            >
                               تنزيل
                             </Button>
-                            <Button type="button" variant="ghost" size="sm" onClick={() => removeCertificateAt(idx)}>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeCertificateAt(idx)}
+                            >
                               إزالة
                             </Button>
                           </div>
@@ -397,11 +448,11 @@ export function PhysicianProfilePanel({ initialProfile }: { initialProfile?: any
                       ))}
                     </ul>
                   ) : (
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400">لا يوجد ملف مرفق حالياً.</div>
+                    <p className="text-xs text-(--muted)">لا توجد مرفقات حالياً.</p>
                   )}
                 </div>
 
-                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="gc-form-submit-bar !border-t-0 !pt-0">
                   <Button
                     type="button"
                     variant="secondary"
@@ -412,7 +463,11 @@ export function PhysicianProfilePanel({ initialProfile }: { initialProfile?: any
                   >
                     إلغاء
                   </Button>
-                  <Button type="button" onClick={saveProfile} disabled={savingProfile || !profile?.specialty?.trim()}>
+                  <Button
+                    type="button"
+                    onClick={saveProfile}
+                    disabled={savingProfile || !profile?.specialty?.trim()}
+                  >
                     {savingProfile ? "جاري الحفظ..." : "حفظ التعديل"}
                   </Button>
                 </div>
@@ -420,9 +475,9 @@ export function PhysicianProfilePanel({ initialProfile }: { initialProfile?: any
             ) : null}
           </>
         ) : (
-          <div className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">جاري تحميل معلومات الطبيب...</div>
+          <p className="mt-4 text-sm text-(--muted)">جاري تحميل معلومات الطبيب...</p>
         )}
-      </CardBody>
+      </div>
     </Card>
   );
 }

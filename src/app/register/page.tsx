@@ -3,11 +3,13 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { apiFetch, setToken } from "@/lib/api";
-import { routeForRole } from "@/lib/auth";
+import { routeForRole, setAuthSession, type MeUser } from "@/lib/auth";
+import { uploadMedicalFiles } from "@/lib/medicalFiles";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { BrandLogo } from "@/components/BrandLogo";
+import { SelectedLocalFilesList } from "@/features/consultations";
 
 type RegisterResponse = {
   user: { id: number; name: string; email: string; role: string };
@@ -15,7 +17,7 @@ type RegisterResponse = {
 };
 
 const roles = [
-  { value: "patient", label: "مريض" },
+  { value: "patient", label: "مراجع" },
   { value: "physician", label: "طبيب" },
 ] as const;
 
@@ -27,7 +29,9 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [physicianSpecialty, setPhysicianSpecialty] = useState("");
   const [physicianCertificate, setPhysicianCertificate] = useState("");
+  const [certificateFiles, setCertificateFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isPhysician = role === "physician";
@@ -38,16 +42,32 @@ export default function RegisterPage() {
     return null;
   }, [password]);
 
+  const canSubmitPhysician = useMemo(() => {
+    if (!isPhysician) return true;
+    return (
+      physicianSpecialty.trim().length > 0 &&
+      physicianCertificate.trim().length > 0 &&
+      certificateFiles.length > 0 &&
+      password.length >= 8
+    );
+  }, [isPhysician, physicianSpecialty, physicianCertificate, certificateFiles.length, password.length]);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    if (isPhysician && certificateFiles.length === 0) {
+      setLoading(false);
+      setError("يرجى إرفاق شهادة واحدة على الأقل (PDF أو صورة) لمراجعة الإدارة.");
+      return;
+    }
+
     const res = await apiFetch<RegisterResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify({
         name,
-        email,
+        email: email.trim().toLowerCase(),
         phone: phone || undefined,
         role,
         password,
@@ -57,13 +77,46 @@ export default function RegisterPage() {
       auth: false,
     });
 
-    setLoading(false);
     if (!res.ok) {
+      setLoading(false);
       setError(res.message);
       return;
     }
 
     setToken(res.data.token);
+    setAuthSession(res.data.user as MeUser);
+
+    if (isPhysician && certificateFiles.length > 0) {
+      setUploading(true);
+      const uploadRes = await uploadMedicalFiles(certificateFiles);
+      setUploading(false);
+
+      if (!uploadRes.ok) {
+        setLoading(false);
+        setError(uploadRes.message);
+        window.location.href = routeForRole(res.data.user.role);
+        return;
+      }
+
+      const fileIds = uploadRes.data.files.map((f) => f.id);
+      const profileRes = await apiFetch("/physician-profile", {
+        method: "PUT",
+        body: JSON.stringify({
+          specialty: physicianSpecialty,
+          certificate: physicianCertificate,
+          certificate_file_ids: fileIds,
+        }),
+      });
+
+      if (!profileRes.ok) {
+        setLoading(false);
+        setError(profileRes.message);
+        window.location.href = routeForRole(res.data.user.role);
+        return;
+      }
+    }
+
+    setLoading(false);
     window.location.href = routeForRole(res.data.user.role);
   }
 
@@ -87,10 +140,11 @@ export default function RegisterPage() {
         <Card>
           <CardBody>
             <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-              إنشاء حساب
+              انضم إلى GazaCare Connect
             </h1>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              أنشئ حساباً للوصول للاستشارات والملف الطبي.
+              أنشئ حسابك للوصول إلى الاستشارات والملف الطبي.
+              {isPhysician ? " حساب الطبيب يخضع لمراجعة الإدارة قبل استقبال الحالات." : ""}
             </p>
 
             <form onSubmit={onSubmit} className="mt-6 grid gap-4">
@@ -143,6 +197,7 @@ export default function RegisterPage() {
                   if (next !== "physician") {
                     setPhysicianSpecialty("");
                     setPhysicianCertificate("");
+                    setCertificateFiles([]);
                   }
                 }}
                 className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:ring-white/10"
@@ -158,7 +213,7 @@ export default function RegisterPage() {
             {isPhysician ? (
               <>
                 <div className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-xs text-teal-900 dark:border-teal-900/40 dark:bg-teal-950/30 dark:text-teal-100">
-                  هذه المعلومات ستظهر ضمن ملف الطبيب لتوضيح تخصصه ومؤهلاته.
+                  أدخل تخصصك ومؤهلك، ثم أرفق شهاداتك (PDF أو صورة). ستُراجعها الإدارة قبل تفعيل حسابك.
                 </div>
 
                 <label className="grid gap-1">
@@ -190,6 +245,42 @@ export default function RegisterPage() {
                     اكتبها بشكل مختصر وواضح (الحد الأقصى 5000 حرف).
                   </span>
                 </label>
+                <label className="grid gap-1">
+                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                    مرفقات الشهادة
+                  </span>
+                  <input
+                    type="file"
+                    multiple
+                    accept=".pdf,image/*"
+                    onChange={(e) => {
+                      const picked = Array.from(e.target.files ?? []);
+                      e.target.value = "";
+                      if (!picked.length) return;
+                      setCertificateFiles((prev) => [...prev, ...picked]);
+                    }}
+                    className="block w-full text-sm text-zinc-700 file:mr-2 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-zinc-900 hover:file:bg-zinc-200 dark:text-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-50 dark:hover:file:bg-zinc-700"
+                  />
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    أرفق شهادة التخرج أو البورد (PDF أو صورة). يمكنك اختيار أكثر من ملف.
+                  </span>
+                </label>
+
+                {certificateFiles.length > 0 ? (
+                  <Card className="bg-white dark:bg-zinc-950">
+                    <CardBody className="p-4 text-sm">
+                      <div className="mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                        الملفات المختارة ({certificateFiles.length})
+                      </div>
+                      <SelectedLocalFilesList
+                        files={certificateFiles}
+                        onRemoveAt={(idx) =>
+                          setCertificateFiles((prev) => prev.filter((_, i) => i !== idx))
+                        }
+                      />
+                    </CardBody>
+                  </Card>
+                ) : null}
               </>
             ) : null}
 
@@ -217,10 +308,14 @@ export default function RegisterPage() {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || uploading || (isPhysician && !canSubmitPhysician)}
               className="w-full"
             >
-              {loading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}
+              {uploading
+                ? "جاري رفع الشهادات..."
+                : loading
+                  ? "جاري إنشاء الحساب..."
+                  : "إنشاء حساب"}
             </Button>
           </form>
 

@@ -42,6 +42,7 @@ export type ConsultationListItem = {
   responded_at?: string | null;
   physician_response?: string | null;
   physician_id?: number | null;
+  assignment_mode?: "queue" | "direct";
   physician?: {
     id: number;
     name: string;

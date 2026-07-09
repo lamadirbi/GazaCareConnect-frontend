@@ -15,8 +15,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GazaCare Connect",
-  description: "جسر طبي عن بُعد للاستشارات التخصصية الخارجية",
+  title: "GazaCare Connect — استشارات طبية عن بُعد",
+  description:
+    "استشارات طبية عن بُعد من غزة — ملف طبي، مرفقات، ورد الطبيب بمكان واحد.",
   icons: {
     icon: "/icon",
     apple: "/icon",
@@ -35,7 +36,9 @@ export default function RootLayout({
       className={`${cairo.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col text-zinc-900 dark:text-zinc-50">
-        <div className="gc-app relative flex min-h-screen flex-col">{children}</div>
+        <div className="gc-app relative flex min-h-screen flex-col">
+          {children}
+        </div>
       </body>
     </html>
   );

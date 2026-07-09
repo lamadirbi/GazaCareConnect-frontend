@@ -9,6 +9,7 @@ type Consultation = {
   status: "pending" | "completed";
   submitted_at: string;
   physician_response?: string | null;
+  assignment_mode?: "queue" | "direct";
   patient?: { name: string } | null;
 };
 
@@ -20,12 +21,12 @@ type Props = {
 
 export function PhysicianInProgressSection({ items, loading, error }: Props) {
   return (
-    <section className="mt-10">
+    <section id="physician-in-progress" className="mt-10 scroll-mt-28">
       <div className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
         استشارات قيد المعالجة
       </div>
       <p className="mb-3 text-xs text-(--muted)">
-        حالات استلمتها ولم تُكمَل بعد — يمكنك متابعة الرد من هنا.
+        استشارات استلمتها وما زالت بحاجة إلى إكمال الرد.
       </p>
       <div className="grid gap-3">
         {items.map((c) => (
@@ -40,6 +41,7 @@ export function PhysicianInProgressSection({ items, loading, error }: Props) {
             ctaLabel="متابعة الرد"
             variant="physician"
             patientName={c.patient?.name ?? null}
+            assignmentMode={c.assignment_mode ?? "queue"}
           />
         ))}
         {!loading && !error && items.length === 0 ? (

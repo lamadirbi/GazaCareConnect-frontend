@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { useRequireAuth } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
+import { PageLoadingGate } from "@/components/PageLoadingGate";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { MedicalFilesList } from "@/features/consultations/components/MedicalFilesList";
@@ -81,7 +82,7 @@ function normalizeConsultation(raw: Record<string, unknown>): Consultation {
 }
 
 export default function PhysicianConsultationPage() {
-  const { user } = useRequireAuth({ allowedRoles: ["physician"] });
+  const { user, loading: authLoading } = useRequireAuth({ allowedRoles: ["physician"] });
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = useMemo(() => Number(params.id), [params.id]);
@@ -137,6 +138,10 @@ export default function PhysicianConsultationPage() {
   const med = consultation?.patient?.medicalProfile;
 
   return (
+    <PageLoadingGate
+      loading={authLoading || loading}
+      message="جاري تحميل تفاصيل الاستشارة..."
+    >
     <div className="min-h-screen bg-transparent">
       <AppHeader
         title="تفاصيل الاستشارة"
@@ -145,9 +150,6 @@ export default function PhysicianConsultationPage() {
       />
 
       <main className="mx-auto w-full max-w-3xl px-4 py-8">
-        {loading ? (
-          <div className="text-sm text-zinc-600 dark:text-zinc-400">جاري التحميل...</div>
-        ) : null}
         {error ? (
           <div className="mb-4">
             <Alert variant="error">{error}</Alert>
@@ -162,24 +164,25 @@ export default function PhysicianConsultationPage() {
                 status={consultation.status}
                 physicianResponse={consultation.physician_response}
                 questionText={consultation.question_text}
+                variant="physician"
               />
               {consultation.patient?.name ? (
                 <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                  المريض: <span className="font-medium text-foreground">{consultation.patient.name}</span>
+                  المراجع: <span className="font-medium text-foreground">{consultation.patient.name}</span>
                 </div>
               ) : null}
 
               {med ? (
                 <div className="mt-4">
                   <MedicalProfileSummaryCard
-                    title="الملف الطبي للمريض"
+                    title="الملف الطبي للمراجع"
                     subtitle=""
                     profile={med}
                   />
                 </div>
               ) : (
                 <div className="mt-4 rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 text-sm text-(--muted)">
-                  لا يوجد ملف طبي مكتمل لهذا المريض ضمن البيانات المعروضة.
+                  لا يوجد ملف طبي مكتمل لهذا المراجع.
                 </div>
               )}
 
@@ -207,12 +210,13 @@ export default function PhysicianConsultationPage() {
               />
             </CardBody>
           </Card>
-        ) : !loading ? (
+        ) : !error ? (
           <div className="rounded-2xl border border-(--border) bg-(--surface) p-6 text-sm text-zinc-600 dark:text-zinc-400">
             لم يتم العثور على الاستشارة.
           </div>
         ) : null}
       </main>
     </div>
+    </PageLoadingGate>
   );
 }

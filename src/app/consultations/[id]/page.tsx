@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRequireAuth } from "@/lib/auth";
 import { useMountedRef } from "@/lib/hooks/useMountedRef";
 import { AppHeader } from "@/components/AppHeader";
+import { PageLoadingGate } from "@/components/PageLoadingGate";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import {
@@ -17,10 +18,8 @@ import {
   type PhysicianProfileData,
 } from "@/features/consultations";
 
-type ShowResponse = { consultation: ConsultationDetail };
-
 export default function ConsultationDetailPage() {
-  const { user } = useRequireAuth();
+  const { user, loading: authLoading } = useRequireAuth();
   const params = useParams<{ id: string }>();
   const id = useMemo(() => Number(params.id), [params.id]);
   const mounted = useMountedRef();
@@ -28,6 +27,7 @@ export default function ConsultationDetailPage() {
   const [consultation, setConsultation] = useState<ConsultationDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [physicianModalOpen, setPhysicianModalOpen] = useState(false);
 
   useEffect(() => {
     getConsultationDetail(id)
@@ -38,7 +38,6 @@ export default function ConsultationDetailPage() {
           setError(res.message);
           return;
         }
-        // backend returns medicalFiles (camel?) as medicalFiles. We'll support both.
         const c: any = res.data.consultation as any;
         c.medical_files = c.medical_files ?? c.medicalFiles ?? [];
         if (c.physician?.physician_profile && !c.physician.physicianProfile) {
@@ -51,7 +50,7 @@ export default function ConsultationDetailPage() {
         setLoading(false);
         setError("فشل تحميل الاستشارة");
       });
-  }, [id]);
+  }, [id, mounted]);
 
   function physicianProfileFor(p: ConsultationDetail["physician"]) {
     if (!p) return null;
@@ -62,16 +61,17 @@ export default function ConsultationDetailPage() {
     return raw.physicianProfile ?? raw.physician_profile ?? null;
   }
 
-  const [physicianModalOpen, setPhysicianModalOpen] = useState(false);
+  const files = consultation?.medical_files ?? [];
 
   return (
+    <PageLoadingGate
+      loading={authLoading || loading}
+      message="جاري تحميل تفاصيل الاستشارة..."
+    >
     <div className="min-h-screen bg-transparent">
       <AppHeader title="تفاصيل الاستشارة" backHref="/consultations" userRole={user?.role} />
 
       <main className="mx-auto w-full max-w-3xl px-4 py-8">
-        {loading ? (
-          <div className="text-sm text-zinc-600 dark:text-zinc-400">جاري التحميل...</div>
-        ) : null}
         {error ? (
           <div className="mb-4">
             <Alert variant="error">{error}</Alert>
@@ -79,58 +79,78 @@ export default function ConsultationDetailPage() {
         ) : null}
 
         {consultation ? (
-          <Card>
-            <CardBody>
-            <ConsultationDetailHeader
-              id={consultation.id}
-              status={consultation.status}
-              physicianResponse={consultation.physician_response}
-              questionText={consultation.question_text}
-            />
+          <div className="grid gap-5">
+            <Card>
+              <CardBody className="p-5 sm:p-6">
+                <ConsultationDetailHeader
+                  id={consultation.id}
+                  status={consultation.status}
+                  physicianResponse={consultation.physician_response}
+                  questionText={consultation.question_text}
+                  submittedAt={consultation.submitted_at}
+                  assignmentMode={consultation.assignment_mode}
+                  physicianName={consultation.physician?.name ?? null}
+                />
+              </CardBody>
+            </Card>
 
-            {consultation.medical_files && consultation.medical_files.length ? (
-              <div className="mt-6">
-                <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                  الملفات المرفقة
-                </div>
-                <div className="mt-2">
-                  <MedicalFilesList
-                    files={consultation.medical_files}
-                    preview="images"
-                    hideImageName
-                    onError={(m) => setError(m)}
-                  />
-                </div>
-              </div>
+            {files.length > 0 ? (
+              <Card>
+                <CardBody className="p-5 sm:p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="gc-section-label">المرفقات الطبية</div>
+                      <p className="mt-1 text-xs text-(--muted)">
+                        {files.length} ملف(ات) مرفقة مع الاستشارة
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <MedicalFilesList
+                      files={files}
+                      preview="images"
+                      onError={(m) => setError(m)}
+                    />
+                  </div>
+                </CardBody>
+              </Card>
             ) : null}
 
             {consultation.physician_response ? (
-              <div className="mt-6">
-                <Alert variant="success">
-                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                    <span className="font-semibold">رد الطبيب</span>
-                    {consultation.physician ? (
-                      <>
-                        <span className="text-emerald-800/70 dark:text-emerald-200/80">—</span>
-                        <button
-                          type="button"
-                          onClick={() => setPhysicianModalOpen(true)}
-                          className="inline font-bold text-emerald-900 underline decoration-emerald-600/40 underline-offset-2 hover:decoration-emerald-700 dark:text-emerald-100"
-                        >
-                          {consultation.physician.name}
-                        </button>
-                      </>
-                    ) : null}
+              <Card>
+                <CardBody className="p-5 sm:p-6">
+                  <div className="gc-section-label text-emerald-800 dark:text-emerald-200">
+                    توصيات الطبيب
                   </div>
-                  <div className="mt-3 whitespace-pre-wrap border-t border-emerald-200/60 pt-3 dark:border-emerald-900/40">
-                    {consultation.physician_response}
+                  {consultation.physician ? (
+                    <p className="mt-2 text-sm text-(--muted)">
+                      الدكتور/ة:{" "}
+                      <button
+                        type="button"
+                        onClick={() => setPhysicianModalOpen(true)}
+                        className="font-semibold text-foreground underline decoration-(--gc-accent)/40 underline-offset-2 hover:decoration-(--gc-accent)"
+                      >
+                        {consultation.physician.name}
+                      </button>
+                    </p>
+                  ) : null}
+                  <div className="mt-4 rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-4 py-4 text-sm leading-7 text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-100">
+                    <p className="whitespace-pre-wrap">{consultation.physician_response}</p>
                   </div>
-                </Alert>
-              </div>
+                </CardBody>
+              </Card>
             ) : null}
-            </CardBody>
-          </Card>
-        ) : !loading ? (
+
+            <div className="text-center">
+              <Link
+                href="/consultations"
+                className="text-sm font-medium text-(--gc-accent) hover:underline"
+              >
+                العودة إلى قائمة الاستشارات
+              </Link>
+            </div>
+          </div>
+        ) : !error ? (
           <Alert variant="info">لم يتم العثور على الاستشارة.</Alert>
         ) : null}
       </main>
@@ -145,6 +165,6 @@ export default function ConsultationDetailPage() {
         />
       ) : null}
     </div>
+    </PageLoadingGate>
   );
 }
-

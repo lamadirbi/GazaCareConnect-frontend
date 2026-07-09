@@ -38,6 +38,12 @@ function isPdfFile(f: MedicalFileLite) {
   return f.original_name.toLowerCase().endsWith(".pdf");
 }
 
+function fileTypeLabel(f: MedicalFileLite) {
+  if (isImageFile(f)) return "صورة";
+  if (isPdfFile(f)) return "ملف PDF";
+  return "مرفق";
+}
+
 function formatBytes(bytes: number | null | undefined) {
   if (!bytes) return "";
   const units = ["B", "KB", "MB", "GB"];
@@ -128,42 +134,25 @@ export function MedicalFilesList({
   }
 
   return (
-    <div className="grid gap-2">
+    <div className="grid gap-3">
       {files.map((f) => {
         const prev = previews[f.id];
         const isImg = isImageFile(f);
-        const showImageBlock = isImg && hideImageName;
-
-        if (prev?.kind === "image" && showImageBlock) {
-          return (
-            <div
-              key={f.id}
-              className="flex flex-col gap-3 rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 text-sm"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={prev.url}
-                alt=""
-                className="mx-auto max-h-72 w-full max-w-full rounded-lg border border-(--border) bg-zinc-100/40 object-contain dark:bg-zinc-900/30"
-              />
-              <div className="flex shrink-0 justify-end">
-                <Button onClick={() => download(f.id, f.original_name)} variant="secondary" size="sm">
-                  تنزيل
-                </Button>
-              </div>
-            </div>
-          );
-        }
+        const loadingPreview = !prev && (isImg || (preview === "images_and_pdfs" && isPdfFile(f)));
 
         return (
           <div
             key={f.id}
-            className="overflow-hidden rounded-xl border border-(--border) bg-(--surface-2)"
+            className="overflow-hidden rounded-2xl border border-(--border) bg-(--surface-2)"
           >
             {prev?.kind === "image" ? (
-              <div className="border-b border-(--border) bg-(--surface)">
+              <div className="border-b border-(--border) bg-(--surface) p-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={prev.url} alt="" className="max-h-72 w-full object-contain" />
+                <img
+                  src={prev.url}
+                  alt=""
+                  className="mx-auto max-h-72 w-full rounded-lg object-contain"
+                />
               </div>
             ) : null}
             {prev?.kind === "pdf" ? (
@@ -172,30 +161,29 @@ export function MedicalFilesList({
               </div>
             ) : null}
 
-            <div className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
-              <div className="min-w-0">
-                {isImg && hideImageName ? null : (
-                  <div className="truncate font-medium text-zinc-900 dark:text-zinc-50">
+            <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--gc-accent-soft) text-[11px] font-bold text-[#0b6e7a]">
+                  {isImg ? "صورة" : isPdfFile(f) ? "PDF" : "ملف"}
+                </span>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold text-foreground">
                     {f.original_name}
                   </div>
-                )}
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {f.file_kind ?? "other"}
-                  {f.size_bytes ? (
-                    <>
-                      {" "}
-                      — <span dir="ltr">{formatBytes(f.size_bytes)}</span>
-                    </>
-                  ) : null}
-                  {f.mime_type ? (
-                    <>
-                      {" "}
-                      — <span dir="ltr">{f.mime_type}</span>
-                    </>
-                  ) : null}
+                  <div className="mt-0.5 text-xs text-(--muted)">
+                    {loadingPreview ? "جاري تحميل المعاينة..." : null}
+                    {!loadingPreview && f.size_bytes ? (
+                      <span dir="ltr">الحجم: {formatBytes(f.size_bytes)}</span>
+                    ) : null}
+                  </div>
                 </div>
               </div>
-              <Button onClick={() => download(f.id, f.original_name)} variant="secondary" size="sm">
+              <Button
+                onClick={() => download(f.id, f.original_name)}
+                variant="secondary"
+                size="sm"
+                className="shrink-0"
+              >
                 تنزيل
               </Button>
             </div>

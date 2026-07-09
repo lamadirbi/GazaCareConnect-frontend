@@ -1,3 +1,4 @@
+export * from "./assignmentLabels";
 export * from "./api";
 export * from "./types";
 
