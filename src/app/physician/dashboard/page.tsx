@@ -47,8 +47,8 @@ export default function PhysicianDashboardPage() {
     }
     let mounted = true;
     Promise.all([
-      apiFetch<Paginated<Consultation>>("/consultations/queue"),
-      apiFetch<Paginated<Consultation>>("/consultations"),
+      apiFetch<Paginated<Consultation>>("/consultations/queue?per_page=100"),
+      apiFetch<Paginated<Consultation>>("/consultations?per_page=100"),
     ])
       .then(([q, mine]) => {
         if (!mounted) return;
@@ -136,18 +136,18 @@ export default function PhysicianDashboardPage() {
             </Alert>
           ) : (
             <>
-              <PhysicianDirectSection
-                items={directPending}
-                loading={loading}
-                error={error}
-              />
-
               <PhysicianQueueSection
                 queue={queue}
                 loading={loading}
                 error={error}
                 claimingId={claimingId}
                 onClaim={claim}
+              />
+
+              <PhysicianDirectSection
+                items={directPending}
+                loading={loading}
+                error={error}
               />
 
               <PhysicianInProgressSection items={inProgress} loading={loading} error={error} />

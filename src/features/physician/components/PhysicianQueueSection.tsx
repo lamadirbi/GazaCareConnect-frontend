@@ -23,10 +23,10 @@ export function PhysicianQueueSection({ queue, loading, error, claimingId, onCla
   return (
     <section id="physician-queue" className="scroll-mt-28">
       <div className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-        استشارات بانتظار الاستلام
+        طابور الحالات الجديدة
       </div>
       <p className="mb-3 text-xs text-(--muted)">
-        استشارات لم يستلمها أي طبيب بعد — يمكنك استلام أي منها للمراجعة.
+        استشارات عامة بانتظار أول طبيب متاح — الأحدث تظهر أولاً.
       </p>
       <div className="grid gap-3">
         {queue.map((c) => (

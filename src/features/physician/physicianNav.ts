@@ -2,14 +2,14 @@ export const PHYSICIAN_DASHBOARD_HOME = "/physician/dashboard";
 
 export const physicianDashboardSections = [
   {
+    id: "physician-queue",
+    label: "طابور الحالات الجديدة",
+    href: `${PHYSICIAN_DASHBOARD_HOME}#physician-queue`,
+  },
+  {
     id: "physician-direct",
     label: "حالات موجّهة بشكل خاص",
     href: `${PHYSICIAN_DASHBOARD_HOME}#physician-direct`,
-  },
-  {
-    id: "physician-queue",
-    label: "حالات عامة",
-    href: `${PHYSICIAN_DASHBOARD_HOME}#physician-queue`,
   },
   {
     id: "physician-in-progress",

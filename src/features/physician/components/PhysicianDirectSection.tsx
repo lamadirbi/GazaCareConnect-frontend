@@ -23,7 +23,7 @@ export function PhysicianDirectSection({ items, loading, error }: Props) {
   return (
     <section id="physician-direct" className="mt-10 scroll-mt-28">
       <div className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-        موجّهة إليك مباشرة
+        حالات موجّهة إليك مباشرة
       </div>
       <p className="mb-3 text-xs text-(--muted)">
         استشارات وجّهها المراجع إليك مباشرة.
