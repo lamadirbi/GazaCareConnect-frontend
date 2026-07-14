@@ -58,11 +58,20 @@ export default function PhysicianDashboardPage() {
         if (mine.ok) {
           const rows = mine.data.data ?? [];
           const pending = rows.filter((c) => c.status === "pending");
+          // Direct cases without a reply yet stay in "موجّهة إليك".
+          // Anything already claimed / sent for review goes to "قيد المعالجة".
           setDirectPending(
-            pending.filter((c) => c.assignment_mode === "direct")
+            pending.filter(
+              (c) =>
+                c.assignment_mode === "direct" && !c.physician_response?.trim(),
+            ),
           );
           setInProgress(
-            pending.filter((c) => c.assignment_mode !== "direct")
+            pending.filter(
+              (c) =>
+                c.assignment_mode !== "direct" ||
+                Boolean(c.physician_response?.trim()),
+            ),
           );
           setCompletedMine(rows.filter((c) => c.status === "completed"));
         }

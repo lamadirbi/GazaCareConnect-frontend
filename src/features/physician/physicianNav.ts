@@ -3,7 +3,7 @@ export const PHYSICIAN_DASHBOARD_HOME = "/physician/dashboard";
 export const physicianDashboardSections = [
   {
     id: "physician-queue",
-    label: "طابور الحالات الجديدة",
+    label: "استشارات بانتظار الاستلام",
     href: `${PHYSICIAN_DASHBOARD_HOME}#physician-queue`,
   },
   {
