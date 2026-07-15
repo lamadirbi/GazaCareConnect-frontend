@@ -255,7 +255,7 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
 
         {showMobileNav ? (
           <div className="shrink-0 lg:hidden">
-            <LogoutButton />
+            <LogoutButton iconOnly />
           </div>
         ) : null}
       </div>
