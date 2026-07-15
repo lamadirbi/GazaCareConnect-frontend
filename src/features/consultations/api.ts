@@ -18,11 +18,11 @@ export async function getConsultationDetail(
 
 export async function updateConsultation(
   id: number,
-  questionText: string,
+  payload: { question_text: string; file_ids?: number[] },
 ): Promise<ApiResult<{ consultation: ConsultationDetail }>> {
   return apiFetch<{ consultation: ConsultationDetail }>(`/consultations/${id}`, {
     method: "PATCH",
-    body: JSON.stringify({ question_text: questionText }),
+    body: JSON.stringify(payload),
   });
 }
 
