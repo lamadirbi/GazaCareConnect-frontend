@@ -10,6 +10,34 @@ const navLinks = [
   { href: "#faq", label: "أسئلة شائعة" },
 ] as const;
 
+function LoginIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <path
+        d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4.5 19.5a7.5 7.5 0 0 1 15 0"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function LandingHeader() {
   const [open, setOpen] = useState(false);
 
@@ -28,20 +56,30 @@ export function LandingHeader() {
     <header className="sticky top-0 z-30 border-b border-(--border) bg-[color-mix(in_srgb,var(--surface-2)_93%,transparent)] backdrop-blur-sm">
       <div className="mx-auto w-full max-w-6xl px-4 py-3">
         {/* شريط الموبايل والتابلت */}
-        <div className="flex items-center justify-between gap-3 lg:hidden">
+        <div className="flex items-center justify-between gap-2 lg:hidden">
           <BrandLogo href="/" size="md" showTitle showTagline className="min-w-0 gap-2" />
 
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="gc-nav-toggle"
-            aria-label="فتح القائمة"
-            aria-expanded={open}
-          >
-            <span className="gc-nav-toggle-bar" />
-            <span className="gc-nav-toggle-bar" />
-            <span className="gc-nav-toggle-bar" />
-          </button>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <Link
+              href="/login"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-(--border) bg-(--surface) text-foreground transition hover:bg-(--surface-2)"
+              aria-label="تسجيل الدخول"
+              title="تسجيل الدخول"
+            >
+              <LoginIcon />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="gc-nav-toggle"
+              aria-label="فتح القائمة"
+              aria-expanded={open}
+            >
+              <span className="gc-nav-toggle-bar" />
+              <span className="gc-nav-toggle-bar" />
+              <span className="gc-nav-toggle-bar" />
+            </button>
+          </div>
         </div>
 
         {/* شريط سطح المكتب */}

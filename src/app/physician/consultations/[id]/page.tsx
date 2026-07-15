@@ -10,7 +10,8 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { MedicalFilesList } from "@/features/consultations/components/MedicalFilesList";
 import { ConsultationDetailHeader } from "@/features/consultations/components/ConsultationDetailHeader";
-import { PhysicianResponseForm } from "@/features/consultations";
+import { ConsultationThread, PhysicianResponseForm } from "@/features/consultations";
+import { postConsultationMessage, type ConsultationMessage } from "@/features/consultations";
 import { MedicalProfileSummaryCard } from "@/features/profile";
 
 type MedicalFileRow = {
@@ -36,6 +37,7 @@ type Consultation = {
   question_text: string;
   status: "pending" | "completed";
   submitted_at: string;
+  responded_at?: string | null;
   physician_response: string | null;
   patient?: {
     id: number;
@@ -52,6 +54,7 @@ type Consultation = {
     physician_profile?: { specialty?: string; certificate?: string } | null;
   };
   medical_files?: MedicalFileRow[];
+  messages?: ConsultationMessage[];
 };
 
 type ShowResponse = { consultation: Record<string, unknown> };
@@ -66,9 +69,31 @@ function normalizeConsultation(raw: Record<string, unknown>): Consultation {
     (raw.medical_files as MedicalFileRow[] | undefined) ??
     (raw.medicalFiles as MedicalFileRow[] | undefined) ??
     [];
+  let messages =
+    (raw.messages as ConsultationMessage[] | undefined) ??
+    [];
+  const physicianResponse = (raw.physician_response as string | null | undefined) ?? null;
+  if (!messages.length && physicianResponse?.trim()) {
+    const physician = raw.physician as Consultation["physician"] | undefined;
+    messages = [
+      {
+        id: -1,
+        sender_role: "physician",
+        body: physicianResponse,
+        created_at:
+          (raw.responded_at as string | undefined) ??
+          (raw.submitted_at as string | undefined) ??
+          new Date().toISOString(),
+        sender: physician
+          ? { id: physician.id, name: physician.name, role: "physician" }
+          : null,
+      },
+    ];
+  }
 
   return {
     ...(raw as unknown as Consultation),
+    physician_response: physicianResponse,
     patient: patient
       ? {
           id: patient.id as number,
@@ -78,6 +103,7 @@ function normalizeConsultation(raw: Record<string, unknown>): Consultation {
         }
       : undefined,
     medical_files: files,
+    messages,
   };
 }
 
@@ -91,6 +117,7 @@ export default function PhysicianConsultationPage() {
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [replying, setReplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -135,7 +162,22 @@ export default function PhysicianConsultationPage() {
     router.push("/physician/dashboard");
   }
 
+  async function sendFollowUp(body: string) {
+    if (!consultation) return;
+    setReplying(true);
+    setError(null);
+    const res = await postConsultationMessage(consultation.id, body);
+    setReplying(false);
+    if (!res.ok) {
+      setError(res.message);
+      return;
+    }
+    setConsultation(normalizeConsultation(res.data.consultation as unknown as Record<string, unknown>));
+  }
+
   const med = consultation?.patient?.medicalProfile;
+  const messages = consultation?.messages ?? [];
+  const hasPhysicianReply = messages.some((m) => m.sender_role === "physician");
 
   return (
     <PageLoadingGate
@@ -201,13 +243,25 @@ export default function PhysicianConsultationPage() {
                 </div>
               ) : null}
 
-              <PhysicianResponseForm
-                value={response}
-                onChange={setResponse}
-                saving={saving}
-                onSubmitReview={() => submit(false)}
-                onSubmitComplete={() => submit(true)}
-              />
+              {hasPhysicianReply ? (
+                <div className="mt-6 border-t border-(--border) pt-5">
+                  <ConsultationThread
+                    messages={messages}
+                    canReply
+                    submitting={replying}
+                    onSubmitReply={sendFollowUp}
+                    replyPlaceholder="تابع الرد مع المراجع..."
+                  />
+                </div>
+              ) : (
+                <PhysicianResponseForm
+                  value={response}
+                  onChange={setResponse}
+                  saving={saving}
+                  onSubmitReview={() => submit(false)}
+                  onSubmitComplete={() => submit(true)}
+                />
+              )}
             </CardBody>
           </Card>
         ) : !error ? (

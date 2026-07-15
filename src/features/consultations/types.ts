@@ -50,6 +50,20 @@ export type ConsultationListItem = {
   } | null;
 };
 
+export type ConsultationMessage = {
+  id: number;
+  consultation_id?: number;
+  sender_id?: number;
+  sender_role: "patient" | "physician";
+  body: string;
+  created_at: string;
+  sender?: {
+    id: number;
+    name: string;
+    role?: string;
+  } | null;
+};
+
 export type ConsultationDetail = ConsultationListItem & {
   physician?: {
     id: number;
@@ -59,5 +73,6 @@ export type ConsultationDetail = ConsultationListItem & {
     physician_profile?: PhysicianProfileData | null;
   } | null;
   medical_files?: MedicalFile[];
+  messages?: ConsultationMessage[];
 };
 

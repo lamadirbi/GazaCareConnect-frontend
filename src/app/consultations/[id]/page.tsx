@@ -9,14 +9,38 @@ import { AppHeader } from "@/components/AppHeader";
 import { PageLoadingGate } from "@/components/PageLoadingGate";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
 import {
   ConsultationDetailHeader,
+  ConsultationThread,
   MedicalFilesList,
   PhysicianInfoModal,
   getConsultationDetail,
+  postConsultationMessage,
+  updateConsultation,
   type ConsultationDetail,
+  type ConsultationMessage,
   type PhysicianProfileData,
 } from "@/features/consultations";
+
+function normalizeMessages(raw: ConsultationDetail): ConsultationMessage[] {
+  const list = (raw.messages ?? []) as ConsultationMessage[];
+  if (list.length > 0) return list;
+  if (raw.physician_response?.trim()) {
+    return [
+      {
+        id: -1,
+        sender_role: "physician",
+        body: raw.physician_response,
+        created_at: raw.responded_at ?? raw.submitted_at,
+        sender: raw.physician
+          ? { id: raw.physician.id, name: raw.physician.name, role: "physician" }
+          : null,
+      },
+    ];
+  }
+  return [];
+}
 
 export default function ConsultationDetailPage() {
   const { user, loading: authLoading } = useRequireAuth();
@@ -28,6 +52,21 @@ export default function ConsultationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [physicianModalOpen, setPhysicianModalOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [replying, setReplying] = useState(false);
+
+  function applyConsultation(raw: ConsultationDetail) {
+    const c: ConsultationDetail = { ...raw };
+    c.medical_files = c.medical_files ?? (c as { medicalFiles?: typeof c.medical_files }).medicalFiles ?? [];
+    if (c.physician?.physician_profile && !c.physician.physicianProfile) {
+      c.physician.physicianProfile = c.physician.physician_profile;
+    }
+    c.messages = normalizeMessages(c);
+    setConsultation(c);
+    setEditText(c.question_text);
+  }
 
   useEffect(() => {
     getConsultationDetail(id)
@@ -38,12 +77,7 @@ export default function ConsultationDetailPage() {
           setError(res.message);
           return;
         }
-        const c: any = res.data.consultation as any;
-        c.medical_files = c.medical_files ?? c.medicalFiles ?? [];
-        if (c.physician?.physician_profile && !c.physician.physicianProfile) {
-          c.physician.physicianProfile = c.physician.physician_profile;
-        }
-        setConsultation(c as ConsultationDetail);
+        applyConsultation(res.data.consultation);
       })
       .catch(() => {
         if (!mounted.current) return;
@@ -62,6 +96,37 @@ export default function ConsultationDetailPage() {
   }
 
   const files = consultation?.medical_files ?? [];
+  const messages = consultation?.messages ?? [];
+  const hasPhysicianReply = messages.some((m) => m.sender_role === "physician");
+  const canEdit = Boolean(consultation && !hasPhysicianReply);
+  const canReply = Boolean(consultation && hasPhysicianReply);
+
+  async function saveEdit() {
+    if (!consultation) return;
+    setSavingEdit(true);
+    setError(null);
+    const res = await updateConsultation(consultation.id, editText.trim());
+    setSavingEdit(false);
+    if (!res.ok) {
+      setError(res.message);
+      return;
+    }
+    applyConsultation(res.data.consultation);
+    setEditing(false);
+  }
+
+  async function sendReply(body: string) {
+    if (!consultation) return;
+    setReplying(true);
+    setError(null);
+    const res = await postConsultationMessage(consultation.id, body);
+    setReplying(false);
+    if (!res.ok) {
+      setError(res.message);
+      return;
+    }
+    applyConsultation(res.data.consultation);
+  }
 
   return (
     <PageLoadingGate
@@ -91,6 +156,47 @@ export default function ConsultationDetailPage() {
                   assignmentMode={consultation.assignment_mode}
                   physicianName={consultation.physician?.name ?? null}
                 />
+
+                {canEdit ? (
+                  <div className="mt-4 border-t border-(--border) pt-4">
+                    {!editing ? (
+                      <Button type="button" variant="secondary" size="sm" onClick={() => setEditing(true)}>
+                        تعديل الاستشارة
+                      </Button>
+                    ) : (
+                      <div className="grid gap-3">
+                        <label className="text-sm font-medium" htmlFor="edit-question">
+                          نص الاستشارة
+                        </label>
+                        <textarea
+                          id="edit-question"
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          rows={5}
+                          className="w-full rounded-xl border border-(--border) bg-(--surface) px-3 py-2 text-sm leading-6 outline-none focus:ring-2 focus:ring-(--ring)"
+                          disabled={savingEdit}
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          <Button type="button" size="sm" onClick={saveEdit} disabled={savingEdit}>
+                            {savingEdit ? "جاري الحفظ..." : "حفظ التعديل"}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setEditing(false);
+                              setEditText(consultation.question_text);
+                            }}
+                            disabled={savingEdit}
+                          >
+                            إلغاء
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
               </CardBody>
             </Card>
 
@@ -116,14 +222,11 @@ export default function ConsultationDetailPage() {
               </Card>
             ) : null}
 
-            {consultation.physician_response ? (
+            {messages.length > 0 || canReply ? (
               <Card>
                 <CardBody className="p-5 sm:p-6">
-                  <div className="gc-section-label text-emerald-800 dark:text-emerald-200">
-                    توصيات الطبيب
-                  </div>
-                  {consultation.physician ? (
-                    <p className="mt-2 text-sm text-(--muted)">
+                  {consultation.physician && hasPhysicianReply ? (
+                    <p className="mb-3 text-sm text-(--muted)">
                       الدكتور/ة:{" "}
                       <button
                         type="button"
@@ -134,9 +237,13 @@ export default function ConsultationDetailPage() {
                       </button>
                     </p>
                   ) : null}
-                  <div className="mt-4 rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-4 py-4 text-sm leading-7 text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-100">
-                    <p className="whitespace-pre-wrap">{consultation.physician_response}</p>
-                  </div>
+                  <ConsultationThread
+                    messages={messages}
+                    canReply={canReply}
+                    submitting={replying}
+                    onSubmitReply={sendReply}
+                    replyPlaceholder="اكتب سؤالاً متابعة أو توضيحاً للطبيب..."
+                  />
                 </CardBody>
               </Card>
             ) : null}

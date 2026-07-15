@@ -9,4 +9,5 @@ export * from "./components/MedicalFilesList";
 export * from "./components/PhysicianResponseForm";
 export * from "./components/PhysicianInfoModal";
 export * from "./components/SelectedLocalFilesList";
+export * from "./components/ConsultationThread";
 
