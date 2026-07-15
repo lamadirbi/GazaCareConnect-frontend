@@ -9,6 +9,7 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { BrandLogo } from "@/components/BrandLogo";
+import { LocalFilePicker } from "@/components/ui/LocalFilePicker";
 import { SelectedLocalFilesList } from "@/features/consultations";
 
 type RegisterResponse = {
@@ -245,26 +246,22 @@ export default function RegisterPage() {
                     اكتبها بشكل مختصر وواضح (الحد الأقصى 5000 حرف).
                   </span>
                 </label>
-                <label className="grid gap-1">
+                <div className="grid gap-1">
                   <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
                     مرفقات الشهادة
                   </span>
-                  <input
-                    type="file"
-                    multiple
+                  <LocalFilePicker
                     accept=".pdf,image/*"
-                    onChange={(e) => {
-                      const picked = Array.from(e.target.files ?? []);
-                      e.target.value = "";
-                      if (!picked.length) return;
-                      setCertificateFiles((prev) => [...prev, ...picked]);
+                    multiple
+                    buttonLabel="اختيار ملفات الشهادة"
+                    hint="أرفق شهادة التخرج أو البورد (PDF أو صورة). يمكنك اختيار أكثر من ملف."
+                    onPick={(picked) => {
+                      if (picked.length) {
+                        setCertificateFiles((prev) => [...prev, ...picked]);
+                      }
                     }}
-                    className="block w-full text-sm text-zinc-700 file:mr-2 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-zinc-900 hover:file:bg-zinc-200 dark:text-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-50 dark:hover:file:bg-zinc-700"
                   />
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                    أرفق شهادة التخرج أو البورد (PDF أو صورة). يمكنك اختيار أكثر من ملف.
-                  </span>
-                </label>
+                </div>
 
                 {certificateFiles.length > 0 ? (
                   <Card className="bg-white dark:bg-zinc-950">

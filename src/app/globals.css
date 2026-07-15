@@ -686,6 +686,50 @@ textarea::placeholder {
   cursor: pointer;
 }
 
+.gc-file-picker-btn {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.6rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--gc-accent) 28%, var(--border));
+  background: var(--surface);
+  padding: 0.55rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0b6e7a;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.gc-file-picker-btn:hover {
+  background: var(--gc-accent-soft);
+  border-color: color-mix(in srgb, var(--gc-accent) 48%, var(--border));
+}
+
+.gc-file-picker-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.gc-file-remove-btn {
+  height: 2rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, #dc2626 28%, var(--border));
+  background: color-mix(in srgb, #fee2e2 70%, var(--surface));
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.gc-file-remove-btn:hover {
+  background: #fee2e2;
+}
+
 .gc-form-submit-bar {
   display: flex;
   flex-direction: column-reverse;

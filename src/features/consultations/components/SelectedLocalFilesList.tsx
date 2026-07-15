@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/Button";
 
 type Props = {
   files: File[];
@@ -77,8 +76,8 @@ export function SelectedLocalFilesList({ files, onRemoveAt }: Props) {
             key={slot}
             className="rounded-xl border border-(--border) bg-(--surface) p-3"
           >
-            <div className="flex items-start gap-3">
-              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-(--border) bg-(--surface-2)">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-(--border) bg-(--surface-2)">
                 {previewUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -91,19 +90,19 @@ export function SelectedLocalFilesList({ files, onRemoveAt }: Props) {
                     <span className="text-[10px] font-bold tracking-wide text-(--gc-accent)">
                       {isPdfFile(f) ? "PDF" : "FILE"}
                     </span>
-                    <span className="text-[10px] text-(--muted)">{fileKindLabel(f)}</span>
                   </div>
                 )}
               </div>
 
               <div className="min-w-0 flex-1">
                 <div
-                  className="break-words text-sm font-medium leading-5 text-foreground"
+                  className="truncate text-sm font-medium text-foreground"
                   title={f.name}
+                  dir="auto"
                 >
                   {f.name}
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-(--muted)">
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-(--muted)">
                   <span>{fileKindLabel(f)}</span>
                   {sizeLabel ? (
                     <>
@@ -113,18 +112,16 @@ export function SelectedLocalFilesList({ files, onRemoveAt }: Props) {
                   ) : null}
                 </div>
               </div>
-            </div>
 
-            <div className="mt-3 flex justify-stretch sm:justify-end">
-              <Button
+              <button
                 type="button"
-                variant="danger"
-                size="sm"
-                className="w-full sm:w-auto"
+                className="gc-file-remove-btn shrink-0"
                 onClick={() => onRemoveAt(idx)}
+                aria-label={`حذف ${f.name}`}
+                title="حذف"
               >
                 حذف
-              </Button>
+              </button>
             </div>
           </li>
         );

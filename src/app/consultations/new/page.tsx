@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { SelectedLocalFilesList } from "@/features/consultations";
+import { LocalFilePicker } from "@/components/ui/LocalFilePicker";
 import { MedicalProfileSummaryCard } from "@/features/profile";
 
 type Consultation = {
@@ -310,41 +311,33 @@ function NewConsultationContent() {
                 description="تقارير، أشعة، أو تحاليل — PDF أو صورة."
               />
 
-              <div className="gc-file-picker">
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*,.pdf"
-                  onChange={(e) => {
-                    const picked = Array.from(e.target.files ?? []);
-                    e.target.value = "";
-                    if (!picked.length) return;
-                    const allowed = picked.filter((f) => {
-                      const t = (f.type || "").toLowerCase();
-                      const n = f.name.toLowerCase();
-                      return (
-                        t.startsWith("image/") ||
-                        t === "application/pdf" ||
-                        n.endsWith(".pdf")
-                      );
-                    });
-                    if (allowed.length < picked.length) {
-                      setError("يُسمح فقط بصور أو ملفات PDF.");
-                    }
-                    if (allowed.length) {
-                      setFiles((prev) => [...prev, ...allowed]);
-                    }
-                  }}
-                />
-                {files.length ? (
-                  <p className="text-xs text-(--muted)">
-                    {files.length} ملف محدد
-                    {uploadedFileIds.length ? ` · تم رفع ${uploadedFileIds.length}` : ""}
-                  </p>
-                ) : (
-                  <p className="text-xs text-(--muted)">لم تُختَر ملفات بعد</p>
-                )}
-              </div>
+              <LocalFilePicker
+                accept="image/*,.pdf"
+                multiple
+                buttonLabel="اختيار ملفات"
+                hint={
+                  files.length
+                    ? `${files.length} ملف محدد${uploadedFileIds.length ? ` · تم رفع ${uploadedFileIds.length}` : ""}`
+                    : "لم تُختَر ملفات بعد"
+                }
+                onPick={(picked) => {
+                  const allowed = picked.filter((f) => {
+                    const t = (f.type || "").toLowerCase();
+                    const n = f.name.toLowerCase();
+                    return (
+                      t.startsWith("image/") ||
+                      t === "application/pdf" ||
+                      n.endsWith(".pdf")
+                    );
+                  });
+                  if (allowed.length < picked.length) {
+                    setError("يُسمح فقط بصور أو ملفات PDF.");
+                  }
+                  if (allowed.length) {
+                    setFiles((prev) => [...prev, ...allowed]);
+                  }
+                }}
+              />
 
               {files.length ? (
                 <div className="mt-4 rounded-2xl border border-(--border) bg-(--surface-2) p-4">

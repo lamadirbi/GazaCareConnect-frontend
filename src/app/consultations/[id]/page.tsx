@@ -11,6 +11,7 @@ import { PageLoadingGate } from "@/components/PageLoadingGate";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { LocalFilePicker } from "@/components/ui/LocalFilePicker";
 import {
   ConsultationDetailHeader,
   ConsultationThread,
@@ -265,39 +266,35 @@ export default function ConsultationDetailPage() {
                             <p className="text-xs text-(--muted)">لا توجد مرفقات حالياً.</p>
                           )}
 
-                          <div className="gc-file-picker mt-1">
-                            <input
-                              type="file"
-                              multiple
-                              accept="image/*,.pdf"
-                              disabled={savingEdit}
-                              onChange={(e) => {
-                                const picked = Array.from(e.target.files ?? []);
-                                e.target.value = "";
-                                if (!picked.length) return;
-                                const allowed = picked.filter((f) => {
-                                  const t = (f.type || "").toLowerCase();
-                                  const n = f.name.toLowerCase();
-                                  return (
-                                    t.startsWith("image/") ||
-                                    t === "application/pdf" ||
-                                    n.endsWith(".pdf")
-                                  );
-                                });
-                                if (allowed.length < picked.length) {
-                                  setError("يُسمح فقط بصور أو ملفات PDF.");
-                                }
-                                if (allowed.length) {
-                                  setNewFiles((prev) => [...prev, ...allowed]);
-                                }
-                              }}
-                            />
-                            <p className="text-xs text-(--muted)">
-                              {newFiles.length
+                          <LocalFilePicker
+                            className="mt-1"
+                            accept="image/*,.pdf"
+                            multiple
+                            buttonLabel="اختيار ملفات"
+                            hint={
+                              newFiles.length
                                 ? `${newFiles.length} ملف جديد قيد الإضافة`
-                                : "أضيفي مرفقات جديدة (اختياري)"}
-                            </p>
-                          </div>
+                                : "أضيفي مرفقات جديدة (اختياري)"
+                            }
+                            onPick={(picked) => {
+                              if (savingEdit) return;
+                              const allowed = picked.filter((f) => {
+                                const t = (f.type || "").toLowerCase();
+                                const n = f.name.toLowerCase();
+                                return (
+                                  t.startsWith("image/") ||
+                                  t === "application/pdf" ||
+                                  n.endsWith(".pdf")
+                                );
+                              });
+                              if (allowed.length < picked.length) {
+                                setError("يُسمح فقط بصور أو ملفات PDF.");
+                              }
+                              if (allowed.length) {
+                                setNewFiles((prev) => [...prev, ...allowed]);
+                              }
+                            }}
+                          />
 
                           {newFiles.length > 0 ? (
                             <div className="rounded-2xl border border-(--border) bg-(--surface-2) p-4">

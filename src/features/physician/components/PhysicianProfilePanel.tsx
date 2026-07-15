@@ -6,6 +6,7 @@ import { uploadMedicalFiles } from "@/lib/medicalFiles";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
+import { LocalFilePicker } from "@/components/ui/LocalFilePicker";
 import { triggerBlobDownload } from "@/components/BlobDownload";
 
 type CertificateFileRef = {
@@ -493,24 +494,19 @@ export function PhysicianProfilePanel({
                   <span className="text-sm font-medium text-foreground">
                     مرفقات الشهادة (صور أو PDF)
                   </span>
-                  <div className="gc-file-picker">
-                    <input
-                      type="file"
-                      multiple
-                      aria-label="مرفقات الشهادة"
-                      accept="image/*,application/pdf"
-                      onChange={(e) => {
-                        const picked = Array.from(e.target.files ?? []);
-                        e.target.value = "";
-                        if (picked.length) void uploadCertificateFiles(picked);
-                      }}
-                    />
-                    {certificateUploading ? (
-                      <p className="text-xs text-(--muted)">جاري رفع الملفات...</p>
-                    ) : (
-                      <p className="text-xs text-(--muted)">يمكنك اختيار أكثر من ملف</p>
-                    )}
-                  </div>
+                  <LocalFilePicker
+                    accept="image/*,application/pdf"
+                    multiple
+                    buttonLabel="اختيار ملفات الشهادة"
+                    hint={
+                      certificateUploading
+                        ? "جاري رفع الملفات..."
+                        : "يمكنك اختيار أكثر من ملف"
+                    }
+                    onPick={(picked) => {
+                      if (picked.length) void uploadCertificateFiles(picked);
+                    }}
+                  />
 
                   {certificateList.length ? (
                     <ul className="grid gap-2">
