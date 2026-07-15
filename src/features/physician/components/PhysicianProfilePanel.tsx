@@ -208,7 +208,7 @@ export function PhysicianProfilePanel({
         specialty: profile.specialty,
         certificate: profile.certificate ?? "",
         certificate_file_ids: ids,
-        resubmit: resubmit || undefined,
+        resubmit: resubmit ? true : undefined,
       }),
     });
     setSavingProfile(false);

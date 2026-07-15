@@ -319,7 +319,21 @@ function NewConsultationContent() {
                     const picked = Array.from(e.target.files ?? []);
                     e.target.value = "";
                     if (!picked.length) return;
-                    setFiles((prev) => [...prev, ...picked]);
+                    const allowed = picked.filter((f) => {
+                      const t = (f.type || "").toLowerCase();
+                      const n = f.name.toLowerCase();
+                      return (
+                        t.startsWith("image/") ||
+                        t === "application/pdf" ||
+                        n.endsWith(".pdf")
+                      );
+                    });
+                    if (allowed.length < picked.length) {
+                      setError("يُسمح فقط بصور أو ملفات PDF.");
+                    }
+                    if (allowed.length) {
+                      setFiles((prev) => [...prev, ...allowed]);
+                    }
                   }}
                 />
                 {files.length ? (

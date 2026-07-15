@@ -38,8 +38,10 @@ export default function AdminUsersPage() {
   async function load() {
     setLoading(true);
     setError(null);
-    const qs = roleFilter ? `?role=${encodeURIComponent(roleFilter)}` : "";
-    const res = await apiFetch<Paginated<UserRow>>(`/admin/users${qs}`);
+    const qs = new URLSearchParams();
+    if (roleFilter) qs.set("role", roleFilter);
+    qs.set("per_page", "100");
+    const res = await apiFetch<Paginated<UserRow>>(`/admin/users?${qs.toString()}`);
     setLoading(false);
     if (!initialLoadDone) setInitialLoadDone(true);
     if (!res.ok) {
