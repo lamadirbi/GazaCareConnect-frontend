@@ -21,16 +21,22 @@ function LogoutIcon({ className }: { className?: string }) {
       aria-hidden
     >
       <path
-        d="M10 7V6a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2v-1"
+        d="M9.5 7.25V6.4c0-1.05.85-1.9 1.9-1.9h6.2c1.05 0 1.9.85 1.9 1.9v11.2c0 1.05-.85 1.9-1.9 1.9h-6.2c-1.05 0-1.9-.85-1.9-1.9v-.85"
         stroke="currentColor"
-        strokeWidth="1.75"
+        strokeWidth="1.7"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M15 12H3m0 0 3.5-3.5M3 12l3.5 3.5"
+        d="M14.25 12H3.75"
         stroke="currentColor"
-        strokeWidth="1.75"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+      <path
+        d="M6.4 8.85 3.75 12l2.65 3.15"
+        stroke="currentColor"
+        strokeWidth="1.7"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -39,16 +45,30 @@ function LogoutIcon({ className }: { className?: string }) {
 }
 
 export function LogoutButton({ className, iconOnly = false }: Props) {
+  if (iconOnly) {
+    return (
+      <button
+        type="button"
+        onClick={() => logoutAndRedirect("/login")}
+        className={cn("gc-logout-icon-btn", className)}
+        aria-label="تسجيل الخروج"
+        title="تسجيل الخروج"
+      >
+        <LogoutIcon />
+      </button>
+    );
+  }
+
   return (
     <Button
       variant="danger"
       size="sm"
       onClick={() => logoutAndRedirect("/login")}
-      className={cn(iconOnly && "h-10 w-10 px-0", className)}
+      className={className}
       aria-label="تسجيل الخروج"
       title="تسجيل الخروج"
     >
-      {iconOnly ? <LogoutIcon /> : "تسجيل الخروج"}
+      تسجيل الخروج
     </Button>
   );
 }

@@ -1041,6 +1041,44 @@ textarea::placeholder {
   transform: scale(0.97);
 }
 
+/* ── Compact logout icon (mobile header) ── */
+
+.gc-logout-icon-btn {
+  display: inline-flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--gc-accent) 22%, var(--border));
+  background: color-mix(in srgb, var(--gc-accent-soft) 55%, var(--surface));
+  color: #0b6e7a;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.gc-logout-icon-btn:hover {
+  border-color: color-mix(in srgb, #ef4444 35%, var(--border));
+  background: color-mix(in srgb, #fecaca 28%, var(--surface));
+  color: #b91c1c;
+  box-shadow: 0 6px 16px rgba(185, 28, 28, 0.1);
+}
+
+.gc-logout-icon-btn:active {
+  transform: scale(0.96);
+}
+
+.gc-logout-icon-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gc-accent) 28%, transparent);
+}
+
 .gc-back-btn-icon {
   display: inline-flex;
   align-items: center;
