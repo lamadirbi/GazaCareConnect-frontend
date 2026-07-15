@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { LogoutButton } from "@/components/LogoutButton";
+import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import {
   PHYSICIAN_DASHBOARD_HOME,
@@ -253,12 +254,14 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
         ) : (
           <div className="hidden shrink-0 items-center gap-2 lg:flex">
             {primaryAction ? <div>{primaryAction}</div> : null}
+            {userRole ? <NotificationBell /> : null}
             {userRole ? <LogoutButton /> : null}
           </div>
         )}
 
         {showMobileNav ? (
-          <div className="shrink-0 lg:hidden">
+          <div className="flex shrink-0 items-center gap-1.5 lg:hidden">
+            <NotificationBell />
             <LogoutButton iconOnly />
           </div>
         ) : null}

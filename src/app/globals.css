@@ -1209,3 +1209,96 @@ textarea::placeholder {
   gap: 0.5rem;
   margin-top: 0.9rem;
 }
+
+/* ── Notification bell ── */
+
+.gc-notif-bell-btn {
+  position: relative;
+  display: inline-flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--gc-accent) 22%, var(--border));
+  background: color-mix(in srgb, var(--gc-accent-soft) 55%, var(--surface));
+  color: #0b6e7a;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.gc-notif-bell-btn:hover {
+  border-color: color-mix(in srgb, var(--gc-accent) 48%, var(--border));
+  background: var(--gc-accent-soft);
+}
+
+.gc-notif-badge {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+.gc-notif-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 50;
+  width: min(22rem, calc(100vw - 2rem));
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.gc-notif-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+}
+
+.gc-notif-mark-all {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--gc-accent);
+}
+
+.gc-notif-mark-all:hover {
+  text-decoration: underline;
+}
+
+.gc-notif-panel-body {
+  max-height: min(24rem, 60vh);
+  overflow-y: auto;
+}
+
+.gc-notif-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  text-align: start;
+  transition: background-color 150ms ease;
+}
+
+.gc-notif-item:hover {
+  background: var(--surface-2);
+}
+
+.gc-notif-item:not(.gc-notif-item-read) {
+  background: color-mix(in srgb, var(--gc-accent-soft) 45%, var(--surface));
+}
