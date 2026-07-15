@@ -107,6 +107,15 @@ export default function LoginPage() {
                 />
               </label>
 
+              <div className="text-end">
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-medium text-(--gc-accent) hover:underline"
+                >
+                  نسيت كلمة المرور؟
+                </Link>
+              </div>
+
               {error ? <Alert variant="error">{error}</Alert> : null}
 
               <Button type="submit" disabled={loading} className="w-full">

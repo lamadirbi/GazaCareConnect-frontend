@@ -25,12 +25,14 @@ type Props = {
 type NavItem = { href: string; label: string; sectionId?: string };
 
 function dashboardNavItems(role: string): NavItem[] {
+  const accountPassword = { href: "/account/password", label: "كلمة المرور" };
   if (role === "patient") {
     return [
       { href: "/dashboard", label: "لوحة التحكم" },
       { href: "/consultations", label: "الاستشارات" },
       { href: "/physicians", label: "الأطباء" },
       { href: "/profile", label: "الملف الطبي" },
+      accountPassword,
     ];
   }
   if (role === "admin") {
@@ -38,6 +40,7 @@ function dashboardNavItems(role: string): NavItem[] {
       { href: "/admin/dashboard", label: "لوحة المدير" },
       { href: "/admin/users", label: "المستخدمون" },
       { href: "/admin/physicians", label: "توثيق الأطباء" },
+      accountPassword,
     ];
   }
   if (role === "physician") {
@@ -48,6 +51,7 @@ function dashboardNavItems(role: string): NavItem[] {
         label: s.label,
         sectionId: s.id,
       })),
+      accountPassword,
     ];
   }
   return [];
