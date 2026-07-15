@@ -1264,6 +1264,18 @@ textarea::placeholder {
   box-shadow: var(--shadow);
 }
 
+/* Mobile: fixed inset so the panel never clips off the side */
+@media (max-width: 1023px) {
+  .gc-notif-panel {
+    position: fixed;
+    top: var(--gc-notif-top, 3.75rem);
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    max-width: none;
+  }
+}
+
 .gc-notif-panel-head {
   display: flex;
   align-items: center;

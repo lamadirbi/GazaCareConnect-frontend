@@ -1,13 +1,65 @@
 import { apiFetch, type ApiResult } from "@/lib/api";
 
-const GENERIC_RESET_MESSAGE =
-  "إذا كان البريد مسجّلاً، أُرسلت تعليمات إعادة التعيين.";
+const MOCK_MODE = process.env.NEXT_PUBLIC_MOCK_API === "true";
 
 export type ForgotPasswordResponse = {
   message: string;
   demo_reset_token?: string;
   demo_reset_url?: string;
 };
+
+export type ForgotPasswordSuccessView = {
+  variant: "success" | "info";
+  message: string;
+  showDemoDetails: boolean;
+};
+
+export function getForgotPasswordFormHint(): string {
+  if (MOCK_MODE) {
+    return "في النسخة التجريبية لا نُرسل بريداً حقيقياً. أدخل بريد حساب تجريبي وسيظهر رابط إعادة التعيين هنا مباشرة.";
+  }
+  return "أدخل بريدك الإلكتروني. إذا كان مسجّلاً لدينا سنرسل إليه رابط إعادة تعيين كلمة المرور.";
+}
+
+export function getForgotPasswordSuccessView(
+  demoToken: string | null,
+  demoUrl: string | null,
+): ForgotPasswordSuccessView {
+  if (MOCK_MODE) {
+    if (demoToken || demoUrl) {
+      return {
+        variant: "success",
+        message:
+          "تم تجهيز رابط إعادة التعيين. في النسخة التجريبية لا يُرسل بريد حقيقي — استخدم الرابط أو الرمز أدناه.",
+        showDemoDetails: true,
+      };
+    }
+    return {
+      variant: "info",
+      message:
+        "لم يُعثر على بريد مسجّل بهذا الاسم. جرّب أحد حسابات «دخول سريع» من صفحة تسجيل الدخول (مثل sara.ahmad@gazacare.ps).",
+      showDemoDetails: false,
+    };
+  }
+
+  const isLocal =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+  let message =
+    "إذا كان بريدك مسجّلاً لدينا، أرسلنا إليه رسالة تحتوي رابط إعادة تعيين كلمة المرور. راجعي صندوق الوارد والرسائل غير المرغوب فيها.";
+
+  if (isLocal) {
+    message +=
+      " على السيرفر المحلي: إن لم يصل بريد، ابحثي عن الرابط في ملف storage/logs/laravel.log.";
+  }
+
+  return {
+    variant: "success",
+    message,
+    showDemoDetails: !!(demoToken || demoUrl),
+  };
+}
 
 export type ResetPasswordPayload = {
   email: string;
@@ -53,5 +105,3 @@ export async function changePassword(
     body: JSON.stringify(payload),
   });
 }
-
-export { GENERIC_RESET_MESSAGE };

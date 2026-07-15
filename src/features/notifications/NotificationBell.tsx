@@ -66,6 +66,26 @@ export function NotificationBell() {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const root = rootRef.current;
+    const btn = root?.querySelector(".gc-notif-bell-btn");
+    if (!root || !(btn instanceof HTMLElement)) return;
+
+    const place = () => {
+      const rect = btn.getBoundingClientRect();
+      root.style.setProperty("--gc-notif-top", `${Math.round(rect.bottom + 8)}px`);
+    };
+
+    place();
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, [open]);
+
   async function handleItemClick(n: AppNotification) {
     if (!n.read_at) {
       const res = await markNotificationRead(n.id);

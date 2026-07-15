@@ -6,7 +6,11 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
-import { GENERIC_RESET_MESSAGE, requestPasswordReset } from "@/lib/password";
+import {
+  getForgotPasswordFormHint,
+  getForgotPasswordSuccessView,
+  requestPasswordReset,
+} from "@/lib/password";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -15,6 +19,8 @@ export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
   const [demoToken, setDemoToken] = useState<string | null>(null);
   const [demoUrl, setDemoUrl] = useState<string | null>(null);
+
+  const successView = sent ? getForgotPasswordSuccessView(demoToken, demoUrl) : null;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,32 +63,36 @@ export default function ForgotPasswordPage() {
               نسيت كلمة المرور؟
             </h1>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              أدخلي بريدك الإلكتروني وسنرسل تعليمات إعادة التعيين.
+              {getForgotPasswordFormHint()}
             </p>
 
-            {sent ? (
+            {sent && successView ? (
               <div className="mt-6 grid gap-4">
-                <Alert variant="success">{GENERIC_RESET_MESSAGE}</Alert>
-                {demoToken || demoUrl ? (
-                  <Alert variant="info">
-                    <p className="font-semibold">وضع تجريبي — لا يوجد بريد حقيقي</p>
+                <Alert variant={successView.variant}>{successView.message}</Alert>
+
+                {successView.showDemoDetails && (demoToken || demoUrl) ? (
+                  <div className="rounded-2xl border border-(--border) bg-(--surface-2) p-4">
                     {demoToken ? (
-                      <p className="mt-2 text-sm">
-                        رمز إعادة التعيين:{" "}
-                        <span className="font-mono font-bold" dir="ltr">
+                      <p className="text-sm">
+                        <span className="font-semibold text-foreground">رمز إعادة التعيين:</span>{" "}
+                        <span className="font-mono font-bold text-(--gc-accent)" dir="ltr">
                           {demoToken}
                         </span>
                       </p>
                     ) : null}
                     {demoUrl ? (
-                      <p className="mt-2">
-                        <Link href={demoUrl} className="font-medium text-(--gc-accent) underline">
-                          افتحي صفحة إعادة التعيين
+                      <p className={demoToken ? "mt-3" : ""}>
+                        <Link
+                          href={demoUrl}
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-(--gc-accent) underline"
+                        >
+                          افتح صفحة إعادة تعيين كلمة المرور
                         </Link>
                       </p>
                     ) : null}
-                  </Alert>
+                  </div>
                 ) : null}
+
                 <Link href="/login" className="text-center text-sm font-medium text-(--gc-accent)">
                   العودة لتسجيل الدخول
                 </Link>
@@ -108,7 +118,7 @@ export default function ForgotPasswordPage() {
                 {error ? <Alert variant="error">{error}</Alert> : null}
 
                 <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? "جاري الإرسال..." : "إرسال التعليمات"}
+                  {loading ? "جاري الإرسال..." : "إرسال رابط إعادة التعيين"}
                 </Button>
 
                 <Link
