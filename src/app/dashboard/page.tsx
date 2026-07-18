@@ -139,13 +139,13 @@ export default function DashboardPage() {
                 <div className="text-xs text-(--muted)">
                   {user.caregiver_mode_enabled && user.caregiver_relationship ? (
                     <>
-                      وضع مقدم الرعاية مفعّل — صلة القرابة:{" "}
+                      وضع مرافق المريض مفعّل — صلة القرابة:{" "}
                       <span className="font-medium text-foreground">
                         {caregiverRelationshipLabel(user.caregiver_relationship)}
                       </span>
                     </>
                   ) : (
-                    "يمكنك تفعيل وضع مقدم الرعاية إذا كنت تقدّم استشارات نيابة عن قريب."
+                    "يمكنك تفعيل وضع مرافق المريض إذا كنت تقدّم استشارات نيابة عن قريب."
                   )}
                 </div>
                 <Button
@@ -159,8 +159,8 @@ export default function DashboardPage() {
                   {caregiverSaving
                     ? "جاري الحفظ..."
                     : user.caregiver_mode_enabled
-                      ? "إيقاف وضع مقدم الرعاية"
-                      : "تفعيل وضع مقدم الرعاية"}
+                      ? "إيقاف وضع مرافق المريض"
+                      : "تفعيل وضع مرافق المريض"}
                 </Button>
               </div>
             ) : null}

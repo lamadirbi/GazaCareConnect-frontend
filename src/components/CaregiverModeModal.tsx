@@ -65,10 +65,10 @@ export function CaregiverModeModal({
     >
       <div className="gc-confirm-modal" onMouseDown={(e) => e.stopPropagation()}>
         <h2 id="gc-caregiver-modal-title" className="gc-confirm-modal-title">
-          تفعيل وضع مقدم الرعاية
+          تفعيل وضع مرافق المريض
         </h2>
         <p className="gc-confirm-modal-message">
-          حدّد صلة قرابتك بالمريض الذي تقدّم له الرعاية. ستظهر هذه المعلومة للطبيب والإدارة عند
+          حدّد صلة قرابتك بالمريض الذي ترافقه. ستظهر هذه المعلومة للطبيب والإدارة عند
           إرسال الاستشارات.
         </p>
         <label className="mt-4 block text-sm font-medium text-foreground" htmlFor="caregiver-relationship">
