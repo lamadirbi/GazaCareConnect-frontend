@@ -18,7 +18,12 @@ type UserRow = {
   is_disabled?: boolean;
   caregiver_mode_enabled?: boolean;
   caregiver_relationship?: string | null;
-  physician_profile?: { specialty?: string; verification_status?: string } | null;
+  physician_profile?: {
+    specialty?: string;
+    verification_status?: string;
+    verified_at?: string | null;
+    verifier?: { id: number; name: string } | null;
+  } | null;
 };
 
 type Paginated<T> = { data: T[] };
@@ -132,6 +137,11 @@ export default function AdminUsersPage() {
                           {row.role === "physician" && row.physician_profile?.verification_status ? (
                             <div className="mt-1 text-xs text-zinc-500">
                               توثيق: {row.physician_profile.verification_status}
+                            </div>
+                          ) : null}
+                          {row.role === "physician" && row.physician_profile?.verifier?.name ? (
+                            <div className="mt-1 text-xs text-zinc-500">
+                              بواسطة: {row.physician_profile.verifier.name}
                             </div>
                           ) : null}
                         </td>
