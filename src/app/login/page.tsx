@@ -49,10 +49,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex flex-1 items-start justify-center bg-zinc-50 px-4 py-6 sm:items-center sm:py-10 dark:bg-black">
+    <div className="relative flex flex-1 items-start justify-center bg-zinc-50 px-4 py-6 sm:items-center sm:py-10">
       <div className="absolute inset-0 -z-10">
-        <div className="absolute -top-24 right-1/2 h-72 w-72 translate-x-1/2 rounded-full bg-teal-200/30 blur-3xl dark:bg-teal-500/10" />
-        <div className="absolute -top-12 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-200/40 blur-3xl dark:bg-indigo-500/10" />
+        <div className="absolute -top-24 right-1/2 h-72 w-72 translate-x-1/2 rounded-full bg-teal-200/30 blur-3xl" />
+        <div className="absolute -top-12 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-200/40 blur-3xl" />
       </div>
 
       <main className="w-full max-w-md py-2">
@@ -60,7 +60,7 @@ export default function LoginPage() {
           <BrandLogo href="/" size="lg" showTitle showTagline className="min-w-0" />
           <Link
             href="/"
-            className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
           >
             الرئيسية
           </Link>
@@ -68,16 +68,16 @@ export default function LoginPage() {
 
         <Card>
           <CardBody className="p-5 sm:p-6">
-            <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-xl font-semibold text-zinc-900">
               مرحباً بعودتك
             </h1>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-zinc-600">
               سجّل دخولك للوصول إلى لوحة التحكم.
             </p>
 
             <form onSubmit={onSubmit} className="mt-6 grid gap-4">
               <label className="grid gap-1">
-                <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="text-sm font-medium text-zinc-800">
                   البريد الإلكتروني
                 </span>
                 <input
@@ -88,12 +88,12 @@ export default function LoginPage() {
                   autoComplete="email"
                   required
                   placeholder="أدخل بريدك الإلكتروني"
-                  className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring) dark:text-zinc-50"
+                  className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring)"
                 />
               </label>
 
               <label className="grid gap-1">
-                <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="text-sm font-medium text-zinc-800">
                   كلمة المرور
                 </span>
                 <input
@@ -103,7 +103,7 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   required
                   placeholder="••••••••"
-                  className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring) dark:text-zinc-50"
+                  className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring)"
                 />
               </label>
 
@@ -123,9 +123,9 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-5 text-center text-sm text-zinc-600 dark:text-zinc-400">
+            <div className="mt-5 text-center text-sm text-zinc-600">
               ليس لديك حساب؟{" "}
-              <Link className="font-medium text-zinc-900 dark:text-zinc-50" href="/register">
+              <Link className="font-medium text-zinc-900" href="/register">
                 إنشاء حساب جديد
               </Link>
             </div>

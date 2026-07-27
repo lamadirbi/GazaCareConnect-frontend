@@ -162,10 +162,10 @@ export default async function Home() {
                     </div>
 
                     <div className="rounded-2xl border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.08)] p-4">
-                      <div className="gc-section-label text-emerald-800 dark:text-emerald-200">
+                      <div className="gc-section-label text-emerald-800">
                         توصيات الطبيب
                       </div>
-                      <p className="mt-2 text-sm leading-6 text-emerald-900/90 dark:text-emerald-50">
+                      <p className="mt-2 text-sm leading-6 text-emerald-900/90">
                         يُنصح بمتابعة الضغط يومياً والاستمرار على الدواء. إذا استمر الصداع أكثر من أسبوعين، راجع طبيبك.
                       </p>
                     </div>
@@ -249,7 +249,7 @@ export default async function Home() {
 
         <section id="faq" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-16">
           <h2 className="text-2xl font-bold text-center">أسئلة شائعة</h2>
-          <p className="mt-2 text-center text-sm text-(--muted)">أسئلة شائعة</p>
+          <p className="mt-2 text-center text-sm text-(--muted)">إجابات على الأسئلة الأكثر شيوعاً</p>
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
             {faqs.map((x) => (
               <details key={x.q} className="gc-faq-item gc-glass rounded-2xl p-5">
@@ -267,7 +267,7 @@ export default async function Home() {
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between">
           <BrandLogo href="/" size="md" showTitle showTagline />
           <p className="text-xs text-(--muted) sm:text-sm">
-            © {new Date().getFullYear()} GazaCare Connect — مشروع تخرج
+            (c) {new Date().getFullYear()} GazaCare Connect — مشروع تخرج
           </p>
         </div>
       </footer>

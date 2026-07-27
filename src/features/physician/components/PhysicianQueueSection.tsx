@@ -35,7 +35,7 @@ export function PhysicianQueueSection({ queue, loading, error, claimingId, onCla
 
   return (
     <section id="physician-queue" className="scroll-mt-28">
-      <div className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+      <div className="mb-3 text-sm font-semibold text-zinc-900">
         استشارات بانتظار الاستلام
       </div>
       <p className="mb-3 text-xs text-(--muted)">
@@ -47,16 +47,16 @@ export function PhysicianQueueSection({ queue, loading, error, claimingId, onCla
             <CardBody className="p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                  <div className="text-sm font-semibold text-zinc-900">
                     #{c.id} — جديد
                   </div>
                   {c.patient?.name ? (
-                    <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    <div className="mt-1 text-xs text-zinc-500">
                       المراجع:{" "}
                       <span className="font-medium">{formatPatientWithRelationship(c.patient)}</span>
                     </div>
                   ) : null}
-                  <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="mt-1 text-sm text-zinc-600">
                     {c.question_text.slice(0, 140)}
                     {c.question_text.length > 140 ? "..." : ""}
                   </div>

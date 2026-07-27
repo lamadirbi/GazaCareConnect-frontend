@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { FaIcon } from "@/components/FaIcon";
 import { LogoutButton } from "@/components/LogoutButton";
 import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -211,15 +212,7 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
             title="رجوع"
           >
             <span className="gc-back-btn-icon" aria-hidden>
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M6.25 3.75L10.75 8L6.25 12.25"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <FaIcon icon="chevron-right" className="text-sm" />
             </span>
           </button>
         ) : null}
@@ -232,9 +225,7 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
             aria-label="فتح القائمة"
             aria-expanded={menuOpen}
           >
-            <span className="gc-nav-toggle-bar" />
-            <span className="gc-nav-toggle-bar" />
-            <span className="gc-nav-toggle-bar" />
+            <FaIcon icon="bars" className="text-base" />
           </button>
         ) : null}
 
@@ -304,7 +295,7 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
                 className="gc-side-nav-close"
                 aria-label="إغلاق القائمة"
               >
-                ×
+                <FaIcon icon="xmark" />
               </button>
             </div>
 

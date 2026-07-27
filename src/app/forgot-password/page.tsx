@@ -45,13 +45,13 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="relative flex flex-1 items-start justify-center bg-zinc-50 px-4 py-6 sm:items-center sm:py-10 dark:bg-black">
+    <div className="relative flex flex-1 items-start justify-center bg-zinc-50 px-4 py-6 sm:items-center sm:py-10">
       <main className="w-full max-w-md py-2">
         <div className="mb-4 flex items-center justify-between gap-2">
           <BrandLogo href="/" size="lg" showTitle showTagline className="min-w-0" />
           <Link
             href="/login"
-            className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
           >
             تسجيل الدخول
           </Link>
@@ -59,10 +59,10 @@ export default function ForgotPasswordPage() {
 
         <Card>
           <CardBody className="p-5 sm:p-6">
-            <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-xl font-semibold text-zinc-900">
               نسيت كلمة المرور؟
             </h1>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-zinc-600">
               {getForgotPasswordFormHint()}
             </p>
 
@@ -111,7 +111,7 @@ export default function ForgotPasswordPage() {
             ) : (
               <form onSubmit={onSubmit} className="mt-6 grid gap-4">
                 <label className="grid gap-1">
-                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                  <span className="text-sm font-medium text-zinc-800">
                     البريد الإلكتروني
                   </span>
                   <input
@@ -134,7 +134,7 @@ export default function ForgotPasswordPage() {
 
                 <Link
                   href="/login"
-                  className="text-center text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400"
+                  className="text-center text-sm text-zinc-600 hover:text-zinc-900"
                 >
                   العودة لتسجيل الدخول
                 </Link>

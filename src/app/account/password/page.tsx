@@ -115,7 +115,7 @@ export default function AccountPasswordPage() {
                 </label>
 
                 {passwordHint ? (
-                  <p className="text-xs text-amber-700 dark:text-amber-300">{passwordHint}</p>
+                  <p className="text-xs text-amber-700">{passwordHint}</p>
                 ) : null}
                 {error ? <Alert variant="error">{error}</Alert> : null}
                 {okMsg ? <Alert variant="success">{okMsg}</Alert> : null}

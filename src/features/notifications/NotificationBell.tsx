@@ -9,26 +9,7 @@ import {
   markNotificationRead,
   type AppNotification,
 } from "@/lib/notifications";
-
-function BellIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 3.75a4.25 4.25 0 0 0-4.25 4.25v1.9c0 .98-.39 1.92-1.09 2.61L5.4 14.8A1.5 1.5 0 0 0 6.6 17.25h10.8a1.5 1.5 0 0 0 1.2-2.45l-1.26-2.29a3.7 3.7 0 0 1-1.09-2.61V8c0-2.35-1.9-4.25-4.25-4.25Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.75 17.25a2.25 2.25 0 0 0 4.5 0"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+import { FaIcon } from "@/components/FaIcon";
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -117,7 +98,7 @@ export function NotificationBell() {
         aria-expanded={open}
         title="الإشعارات"
       >
-        <BellIcon />
+        <FaIcon icon="bell" className="text-base" />
         {unreadCount > 0 ? (
           <span className="gc-notif-badge" aria-hidden>
             {unreadCount > 9 ? "9+" : unreadCount}

@@ -9,6 +9,7 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { RejectReasonModal } from "@/components/ui/RejectReasonModal";
+import { PhysicianPhotoBox } from "@/features/physician/components/PhysicianPhotoBox";
 import { triggerBlobDownload } from "@/components/BlobDownload";
 
 type CertificateFile = {
@@ -25,6 +26,7 @@ type PhysicianProfileRow = {
   certificate: string;
   verification_status: string;
   rejection_reason?: string | null;
+  profile_photo_file_id?: number | null;
   created_at?: string;
   user?: {
     id: number;
@@ -47,9 +49,9 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusStyles: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200",
-  approved: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200",
-  rejected: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200",
+  pending: "bg-amber-100 text-amber-800",
+  approved: "bg-emerald-100 text-emerald-800",
+  rejected: "bg-red-100 text-red-800",
 };
 
 function formatBytes(bytes?: number | null) {
@@ -167,10 +169,10 @@ export default function AdminPhysiciansPage() {
           <CardBody className="p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                <h1 className="text-lg font-semibold text-zinc-900">
                   مراجعة طلبات الأطباء
                 </h1>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-sm text-zinc-600">
                   راجع بيانات الطبيب وشهاداته، ثم وثّقه أو ارفض الطلب.
                 </p>
               </div>
@@ -202,9 +204,15 @@ export default function AdminPhysiciansPage() {
                     <Card key={row.id} className="overflow-hidden">
                       <CardBody className="p-0">
                         <div className="flex flex-col gap-4 border-b border-(--border) bg-(--surface-2) p-5 sm:flex-row sm:items-start sm:justify-between">
-                          <div className="min-w-0">
+                          <div className="flex min-w-0 flex-1 gap-4">
+                            <PhysicianPhotoBox
+                              fileId={row.profile_photo_file_id}
+                              alt={row.user?.name ?? "طبيب"}
+                              size="lg"
+                            />
+                            <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
-                              <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                              <h2 className="text-base font-semibold text-zinc-900">
                                 {row.user?.name ?? "طبيب"}
                               </h2>
                               <span
@@ -213,29 +221,30 @@ export default function AdminPhysiciansPage() {
                                 {statusLabels[status] ?? status}
                               </span>
                               {row.user?.is_disabled ? (
-                                <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700 dark:bg-red-900/30 dark:text-red-200">
+                                <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">
                                   حساب معطّل
                                 </span>
                               ) : null}
                             </div>
-                            <div className="mt-2 grid gap-1 text-sm text-zinc-600 dark:text-zinc-400">
+                            <div className="mt-2 grid gap-1 text-sm text-zinc-600">
                               <div className="min-w-0">
-                                <span className="font-medium text-zinc-700 dark:text-zinc-300">البريد:</span>{" "}
+                                <span className="font-medium text-zinc-700">البريد:</span>{" "}
                                 <span className="break-all" dir="ltr">
                                   {row.user?.email}
                                 </span>
                               </div>
                               {row.user?.phone ? (
                                 <div>
-                                  <span className="font-medium text-zinc-700 dark:text-zinc-300">الهاتف:</span>{" "}
+                                  <span className="font-medium text-zinc-700">الهاتف:</span>{" "}
                                   <span dir="ltr">{row.user.phone}</span>
                                 </div>
                               ) : null}
                               <div>
-                                <span className="font-medium text-zinc-700 dark:text-zinc-300">تاريخ التسجيل:</span>{" "}
+                                <span className="font-medium text-zinc-700">تاريخ التسجيل:</span>{" "}
                                 {formatDate(row.user?.created_at ?? row.created_at)}
                               </div>
                             </div>
+                          </div>
                           </div>
 
                           {status === "pending" ? (
@@ -266,19 +275,19 @@ export default function AdminPhysiciansPage() {
 
                         <div className="grid gap-5 p-5 lg:grid-cols-2">
                           <section className="min-w-0 rounded-2xl border border-(--border) bg-(--surface) p-4">
-                            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                            <h3 className="text-sm font-semibold text-zinc-900">
                               المؤهل والتخصص
                             </h3>
                             <dl className="mt-3 space-y-3 text-sm">
                               <div>
                                 <dt className="text-xs font-medium text-zinc-500">التخصص</dt>
-                                <dd className="mt-1 break-words font-medium text-zinc-900 dark:text-zinc-50">
+                                <dd className="mt-1 break-words font-medium text-zinc-900">
                                   {row.specialty}
                                 </dd>
                               </div>
                               <div>
                                 <dt className="text-xs font-medium text-zinc-500">وصف الشهادة / المؤهل</dt>
-                                <dd className="mt-1 whitespace-pre-wrap break-words leading-6 text-zinc-700 dark:text-zinc-300">
+                                <dd className="mt-1 whitespace-pre-wrap break-words leading-6 text-zinc-700">
                                   {row.certificate}
                                 </dd>
                               </div>
@@ -287,7 +296,7 @@ export default function AdminPhysiciansPage() {
 
                           <section className="min-w-0 rounded-2xl border border-(--border) bg-(--surface) p-4">
                             <div className="flex items-center justify-between gap-2">
-                              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                              <h3 className="text-sm font-semibold text-zinc-900">
                                 مرفقات الشهادة
                               </h3>
                               <span className="shrink-0 text-xs text-zinc-500">{files.length} ملف</span>
@@ -309,7 +318,7 @@ export default function AdminPhysiciansPage() {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                       <div
-                                        className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50"
+                                        className="truncate text-sm font-medium text-zinc-900"
                                         title={file.original_name}
                                         dir="auto"
                                       >
@@ -339,7 +348,7 @@ export default function AdminPhysiciansPage() {
                         </div>
 
                         {row.rejection_reason ? (
-                          <div className="border-t border-(--border) bg-red-50 px-4 py-3 text-sm leading-6 text-red-700 dark:bg-red-950/20 dark:text-red-300 sm:px-5 sm:py-4">
+                          <div className="border-t border-(--border) bg-red-50 px-4 py-3 text-sm leading-6 text-red-700 sm:px-5 sm:py-4">
                             <span className="font-semibold">سبب الرفض:</span>{" "}
                             <span className="break-words">{row.rejection_reason}</span>
                           </div>

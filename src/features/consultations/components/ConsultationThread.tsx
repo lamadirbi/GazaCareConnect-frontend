@@ -66,7 +66,7 @@ export function ConsultationThread({
                 key={m.id}
                 className={`rounded-2xl border px-4 py-3 ${
                   isPhysician
-                    ? "border-emerald-200/80 bg-emerald-50/80 dark:border-emerald-900/40 dark:bg-emerald-950/40"
+                    ? "border-emerald-200/80 bg-emerald-50/80"
                     : "border-(--border) bg-(--surface-2)"
                 }`}
               >
@@ -74,7 +74,7 @@ export function ConsultationThread({
                   <span
                     className={`font-semibold ${
                       isPhysician
-                        ? "text-emerald-800 dark:text-emerald-200"
+                        ? "text-emerald-800"
                         : "text-foreground"
                     }`}
                   >

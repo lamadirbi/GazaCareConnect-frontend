@@ -90,7 +90,7 @@ export default function AdminUsersPage() {
         <Card>
           <CardBody className="p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">المستخدمون</h1>
+              <h1 className="text-lg font-semibold text-zinc-900">المستخدمون</h1>
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}

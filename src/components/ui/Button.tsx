@@ -25,7 +25,7 @@ export function Button({
     ghost:
       "text-[color:var(--muted)] hover:bg-[color:var(--surface-2)] hover:text-[color:var(--foreground)]",
     danger:
-      "text-red-700 hover:bg-red-50 dark:text-red-200 dark:hover:bg-red-950/40",
+      "text-red-700 hover:bg-red-50",
   };
 
   return <button className={cn(base, sizes, styles[variant], className)} {...props} />;

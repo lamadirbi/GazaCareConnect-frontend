@@ -64,10 +64,10 @@ export default function VerifiedPhysiciansPage() {
       <main className="mx-auto w-full max-w-5xl px-4 py-8">
         <Card>
           <CardBody className="p-6">
-            <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-lg font-semibold text-zinc-900">
               الأطباء الموثّقون
             </h1>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-zinc-600">
               تصفّح الأطباء وأرسل استشارة لمن تختاره، أو أرسلها لأول طبيب متاح من صفحة استشارة جديدة.
             </p>
 
@@ -91,11 +91,11 @@ export default function VerifiedPhysiciansPage() {
                 {rows.map((row) => (
                   <Card key={row.id}>
                     <CardBody className="p-5">
-                      <div className="font-semibold text-zinc-900 dark:text-zinc-50">
+                      <div className="font-semibold text-zinc-900">
                         {row.user?.name}
                       </div>
                       <div className="mt-1 text-sm text-(--gc-accent)">{row.specialty}</div>
-                      <p className="mt-3 line-clamp-3 text-sm text-zinc-600 dark:text-zinc-400">
+                      <p className="mt-3 line-clamp-3 text-sm text-zinc-600">
                         {row.certificate}
                       </p>
                       <div className="mt-4">

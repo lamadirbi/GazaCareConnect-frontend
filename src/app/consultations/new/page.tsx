@@ -28,6 +28,8 @@ type Consultation = {
 type CreateResponse = { consultation: Consultation };
 
 type MedicalProfile = {
+  gender?: string | null;
+  age?: number | null;
   height_cm: number | null;
   weight_kg: number | null;
   chronic_diseases: string | null;
@@ -256,7 +258,7 @@ function NewConsultationContent() {
                     تصفح الأطباء الموثّقين
                   </Link>
                   {selectedPhysician ? (
-                    <p className="mt-3 rounded-xl border border-sky-200/80 bg-sky-50/80 px-3 py-2.5 text-xs text-sky-900 dark:border-sky-900/40 dark:bg-sky-950/40 dark:text-sky-100">
+                    <p className="mt-3 rounded-xl border border-sky-200/80 bg-sky-50/80 px-3 py-2.5 text-xs text-sky-900">
                       ستُرسل إلى د. {selectedPhysician.user?.name}
                     </p>
                   ) : null}

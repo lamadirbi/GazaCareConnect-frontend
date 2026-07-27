@@ -3,40 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { FaIcon } from "@/components/FaIcon";
 
 const navLinks = [
-  { href: "#services", label: "الخدمات" },
-  { href: "#how", label: "كيف تعمل" },
+  { href: "#how", label: "كيف تعمل؟" },
+  { href: "#services", label: "خدماتنا" },
   { href: "#faq", label: "أسئلة شائعة" },
 ] as const;
-
-function LoginIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden
-    >
-      <path
-        d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M4.5 19.5a7.5 7.5 0 0 1 15 0"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 export function LandingHeader() {
   const [open, setOpen] = useState(false);
@@ -66,7 +39,7 @@ export function LandingHeader() {
               aria-label="تسجيل الدخول"
               title="تسجيل الدخول"
             >
-              <LoginIcon />
+              <FaIcon icon="user" className="text-base" />
             </Link>
             <button
               type="button"
@@ -75,9 +48,7 @@ export function LandingHeader() {
               aria-label="فتح القائمة"
               aria-expanded={open}
             >
-              <span className="gc-nav-toggle-bar" />
-              <span className="gc-nav-toggle-bar" />
-              <span className="gc-nav-toggle-bar" />
+              <FaIcon icon="bars" className="text-base" />
             </button>
           </div>
         </div>
@@ -132,7 +103,7 @@ export function LandingHeader() {
             className="gc-side-nav-close"
             aria-label="إغلاق القائمة"
           >
-            ×
+            <FaIcon icon="xmark" />
           </button>
         </div>
 

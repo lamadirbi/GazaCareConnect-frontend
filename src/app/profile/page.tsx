@@ -14,6 +14,8 @@ import { Alert } from "@/components/ui/Alert";
 type MedicalProfile = {
   id: number;
   user_id: number;
+  gender: string | null;
+  age: number | null;
   height_cm: number | null;
   weight_kg: number | null;
   chronic_diseases: string | null;
@@ -21,6 +23,8 @@ type MedicalProfile = {
   allergies: string | null;
   current_medications: string | null;
 };
+
+import { genderLabel } from "@/lib/medicalProfile";
 
 type ProfileResponse = { profile: MedicalProfile };
 
@@ -65,6 +69,8 @@ export default function ProfilePage() {
     const res = await apiFetch<ProfileResponse>(`/medical-profile`, {
       method: "PUT",
       body: JSON.stringify({
+        gender: profile.gender,
+        age: profile.age,
         height_cm: profile.height_cm,
         weight_kg: profile.weight_kg,
         chronic_diseases: profile.chronic_diseases,
@@ -113,41 +119,51 @@ export default function ProfilePage() {
         {profile ? (
           <Card>
             <CardBody className="p-6">
-            <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="mt-1 text-xs text-zinc-500">
               هذه البيانات يراها الطبيب عند مراجعة استشارتك.
             </div>
 
-            <div className="mt-4 grid gap-3 text-sm text-zinc-700 dark:text-zinc-200 sm:grid-cols-2">
+            <div className="mt-4 grid gap-3 text-sm text-zinc-700 sm:grid-cols-2">
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">الطول</div>
+                <div className="text-xs text-zinc-500">الجنس</div>
+                <div className="mt-1 font-medium">{genderLabel(profile.gender)}</div>
+              </div>
+              <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3">
+                <div className="text-xs text-zinc-500">العمر</div>
+                <div className="mt-1 font-medium">
+                  {profile.age != null ? <span dir="ltr">{profile.age} سنة</span> : "غير محدد"}
+                </div>
+              </div>
+              <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3">
+                <div className="text-xs text-zinc-500">الطول</div>
                 <div className="mt-1 font-medium">
                   {profile.height_cm ? <span dir="ltr">{profile.height_cm} cm</span> : "غير محدد"}
                 </div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">الوزن</div>
+                <div className="text-xs text-zinc-500">الوزن</div>
                 <div className="mt-1 font-medium">
                   {profile.weight_kg ? <span dir="ltr">{profile.weight_kg} kg</span> : "غير محدد"}
                 </div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 sm:col-span-2">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">أمراض مزمنة</div>
+                <div className="text-xs text-zinc-500">أمراض مزمنة</div>
                 <div className="mt-1 whitespace-pre-wrap font-medium">
                   {fieldOrDash(profile.chronic_diseases)}
                 </div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 sm:col-span-2">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">التاريخ الطبي</div>
+                <div className="text-xs text-zinc-500">التاريخ الطبي</div>
                 <div className="mt-1 whitespace-pre-wrap font-medium">
                   {fieldOrDash(profile.medical_history)}
                 </div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 sm:col-span-2">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">الحساسية</div>
+                <div className="text-xs text-zinc-500">الحساسية</div>
                 <div className="mt-1 whitespace-pre-wrap font-medium">{fieldOrDash(profile.allergies)}</div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 sm:col-span-2">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">الأدوية الحالية</div>
+                <div className="text-xs text-zinc-500">الأدوية الحالية</div>
                 <div className="mt-1 whitespace-pre-wrap font-medium">
                   {fieldOrDash(profile.current_medications)}
                 </div>
@@ -173,7 +189,42 @@ export default function ProfilePage() {
               <div className="mt-4 grid gap-4 rounded-2xl border border-(--border) bg-(--surface-2) p-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="grid gap-1">
-                    <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                    <span className="text-sm font-medium text-zinc-800">الجنس</span>
+                    <select
+                      value={profile.gender ?? ""}
+                      onChange={(e) =>
+                        setProfile({
+                          ...profile,
+                          gender: e.target.value ? e.target.value : null,
+                        })
+                      }
+                      className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring)"
+                    >
+                      <option value="">غير محدد</option>
+                      <option value="male">ذكر</option>
+                      <option value="female">أنثى</option>
+                    </select>
+                  </label>
+
+                  <label className="grid gap-1">
+                    <span className="text-sm font-medium text-zinc-800">العمر</span>
+                    <input
+                      value={profile.age ?? ""}
+                      onChange={(e) =>
+                        setProfile({
+                          ...profile,
+                          age: e.target.value ? Number(e.target.value) : null,
+                        })
+                      }
+                      inputMode="numeric"
+                      min={1}
+                      max={120}
+                      className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring)"
+                    />
+                  </label>
+
+                  <label className="grid gap-1">
+                    <span className="text-sm font-medium text-zinc-800">
                       الطول (سم)
                     </span>
                     <input
@@ -185,12 +236,12 @@ export default function ProfilePage() {
                         })
                       }
                       inputMode="numeric"
-                      className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring) dark:text-zinc-50"
+                      className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring)"
                     />
                   </label>
 
                   <label className="grid gap-1">
-                    <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                    <span className="text-sm font-medium text-zinc-800">
                       الوزن (كغ)
                     </span>
                     <input
@@ -202,13 +253,13 @@ export default function ProfilePage() {
                         })
                       }
                       inputMode="numeric"
-                      className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-800 dark:bg-black dark:text-zinc-50 dark:focus:ring-white/10"
+                      className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
                     />
                   </label>
                 </div>
 
                 <label className="grid gap-1">
-                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                  <span className="text-sm font-medium text-zinc-800">
                     أمراض مزمنة
                   </span>
                   <textarea
@@ -217,12 +268,12 @@ export default function ProfilePage() {
                       setProfile({ ...profile, chronic_diseases: e.target.value || null })
                     }
                     rows={3}
-                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-800 dark:bg-black dark:text-zinc-50 dark:focus:ring-white/10"
+                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
                   />
                 </label>
 
                 <label className="grid gap-1">
-                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                  <span className="text-sm font-medium text-zinc-800">
                     التاريخ الطبي
                   </span>
                   <textarea
@@ -231,12 +282,12 @@ export default function ProfilePage() {
                       setProfile({ ...profile, medical_history: e.target.value || null })
                     }
                     rows={4}
-                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-800 dark:bg-black dark:text-zinc-50 dark:focus:ring-white/10"
+                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
                   />
                 </label>
 
                 <label className="grid gap-1">
-                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                  <span className="text-sm font-medium text-zinc-800">
                     الحساسية
                   </span>
                   <textarea
@@ -245,12 +296,12 @@ export default function ProfilePage() {
                       setProfile({ ...profile, allergies: e.target.value || null })
                     }
                     rows={2}
-                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-800 dark:bg-black dark:text-zinc-50 dark:focus:ring-white/10"
+                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
                   />
                 </label>
 
                 <label className="grid gap-1">
-                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                  <span className="text-sm font-medium text-zinc-800">
                     الأدوية الحالية
                   </span>
                   <textarea
@@ -262,7 +313,7 @@ export default function ProfilePage() {
                       })
                     }
                     rows={2}
-                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-800 dark:bg-black dark:text-zinc-50 dark:focus:ring-white/10"
+                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
                   />
                 </label>
 

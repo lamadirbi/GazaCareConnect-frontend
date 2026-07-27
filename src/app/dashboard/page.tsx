@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { CaregiverModeModal } from "@/components/CaregiverModeModal";
 import { caregiverRelationshipLabel } from "@/lib/caregiver";
-import type { CaregiverRelationship } from "@/lib/caregiver";
+import { genderLabel } from "@/lib/medicalProfile";
 
 type MedicalProfile = {
+  gender: string | null;
+  age: number | null;
   height_cm: number | null;
   weight_kg: number | null;
   chronic_diseases: string | null;
@@ -130,7 +132,7 @@ export default function DashboardPage() {
         <Card className="mt-4 overflow-hidden">
           <div className="h-1 bg-gradient-to-l from-(--gc-accent) to-[#0b6e7a]" />
           <CardBody>
-            <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-xl font-semibold text-zinc-900">
               لوحة التحكم
             </h1>
 
@@ -171,11 +173,11 @@ export default function DashboardPage() {
               </Alert>
             ) : null}
 
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-zinc-600">
               {user ? (
                 <>
                   مرحباً، <span className="font-medium text-foreground">{user.name}</span>
-                  <span className="mx-2 text-zinc-300 dark:text-zinc-600">·</span>
+                  <span className="mx-2 text-zinc-300">·</span>
                   <span className="inline-flex items-center rounded-full border border-(--border) bg-(--surface-2) px-2.5 py-0.5 text-xs font-medium text-(--muted)">
                     {roleLabel(user.role)}
                   </span>
@@ -204,6 +206,19 @@ export default function DashboardPage() {
                 <ul className="mt-5 divide-y divide-(--border) list-none ps-0">
                   {(
                     [
+                      {
+                        label: "الجنس",
+                        value: genderLabel(profile?.gender),
+                      },
+                      {
+                        label: "العمر",
+                        value:
+                          profile?.age != null ? (
+                            <span dir="ltr">{profile.age} سنة</span>
+                          ) : (
+                            "غير محدد"
+                          ),
+                      },
                       {
                         label: "الطول",
                         value:
@@ -265,10 +280,10 @@ export default function DashboardPage() {
               {user?.role === "patient" ? (
                 <Card className="hover:brightness-[1.03]">
                   <CardBody className="p-5">
-                    <div className="font-semibold text-zinc-900 dark:text-zinc-50">
+                    <div className="font-semibold text-zinc-900">
                       الأطباء الموثّقون
                     </div>
-                    <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="mt-1 text-sm text-zinc-600">
                       تصفّح الأطباء وأرسل استشارة مباشرة لمن تختاره.
                     </div>
                     <div className="mt-4">
@@ -285,10 +300,10 @@ export default function DashboardPage() {
               {user?.role !== "patient" ? (
                 <Card className="hover:brightness-[1.03]">
                   <CardBody className="p-5">
-                    <div className="font-semibold text-zinc-900 dark:text-zinc-50">
+                    <div className="font-semibold text-zinc-900">
                       الملف الطبي
                     </div>
-                    <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="mt-1 text-sm text-zinc-600">
                       عدّل بياناتك الصحية.
                     </div>
                     <div className="mt-4">
@@ -305,10 +320,10 @@ export default function DashboardPage() {
               {user?.role === "patient" ? (
               <Card className="hover:brightness-[1.03]">
                 <CardBody className="p-5">
-                    <div className="font-semibold text-zinc-900 dark:text-zinc-50">
+                    <div className="font-semibold text-zinc-900">
                       استشاراتي
                     </div>
-                    <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    <div className="mt-1 text-sm text-zinc-600">
                       أرسل استشارة جديدة أو راجع السابقة.
                     </div>
                   <div className="mt-4 flex flex-wrap gap-2">

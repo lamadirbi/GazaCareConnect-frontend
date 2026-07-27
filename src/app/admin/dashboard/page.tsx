@@ -44,8 +44,8 @@ export default function AdminDashboardPage() {
       <main className="mx-auto w-full max-w-5xl px-4 py-8">
         <Card>
           <CardBody className="p-6">
-            <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">لوحة المدير</h1>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <h1 className="text-xl font-semibold text-zinc-900">لوحة المدير</h1>
+            <p className="mt-1 text-sm text-zinc-600">
               أهلاً {user?.name} — إدارة المستخدمين وتوثيق الأطباء.
             </p>
 
@@ -53,7 +53,7 @@ export default function AdminDashboardPage() {
               <Card className="hover:brightness-[1.03]">
                 <CardBody className="p-5">
                   <div className="text-sm text-zinc-500">طلبات توثيق أطباء</div>
-                  <div className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+                  <div className="mt-1 text-2xl font-semibold text-zinc-900">
                     {pendingCount ?? "..."}
                   </div>
                   <Link href="/admin/physicians" className="mt-4 inline-block text-sm font-semibold text-(--gc-accent)">
@@ -65,7 +65,7 @@ export default function AdminDashboardPage() {
               <Card className="hover:brightness-[1.03]">
                 <CardBody className="p-5">
                   <div className="text-sm text-zinc-500">المستخدمون</div>
-                  <div className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+                  <div className="mt-1 text-2xl font-semibold text-zinc-900">
                     {usersCount ?? "..."}
                   </div>
                   <Link href="/admin/users" className="mt-4 inline-block text-sm font-semibold text-(--gc-accent)">

@@ -62,13 +62,13 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="relative flex flex-1 items-start justify-center bg-zinc-50 px-4 py-6 sm:items-center sm:py-10 dark:bg-black">
+    <div className="relative flex flex-1 items-start justify-center bg-zinc-50 px-4 py-6 sm:items-center sm:py-10">
       <main className="w-full max-w-md py-2">
         <div className="mb-4 flex items-center justify-between gap-2">
           <BrandLogo href="/" size="lg" showTitle showTagline className="min-w-0" />
           <Link
             href="/login"
-            className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
           >
             تسجيل الدخول
           </Link>
@@ -76,10 +76,10 @@ function ResetPasswordForm() {
 
         <Card>
           <CardBody className="p-5 sm:p-6">
-            <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-xl font-semibold text-zinc-900">
               إعادة تعيين كلمة المرور
             </h1>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-zinc-600">
               أدخلي الرمز من البريد وكلمة المرور الجديدة.
             </p>
 
@@ -142,7 +142,7 @@ function ResetPasswordForm() {
                 </label>
 
                 {passwordHint ? (
-                  <p className="text-xs text-amber-700 dark:text-amber-300">{passwordHint}</p>
+                  <p className="text-xs text-amber-700">{passwordHint}</p>
                 ) : null}
                 {error ? <Alert variant="error">{error}</Alert> : null}
 

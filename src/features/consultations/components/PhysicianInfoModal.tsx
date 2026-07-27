@@ -116,43 +116,43 @@ export function PhysicianInfoModal({ open, onClose, consultationId, physicianNam
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-(--border) px-4 py-3">
           <h2
             id="physician-modal-title"
-            className="text-sm font-semibold text-zinc-900 dark:text-zinc-50"
+            className="text-sm font-semibold text-zinc-900"
           >
             معلومات الطبيب — {physicianName}
           </h2>
           <button
             type="button"
             onClick={close}
-            className="rounded-lg p-1.5 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+            className="rounded-lg p-1.5 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800"
             aria-label="إغلاق"
           >
             ×
           </button>
         </div>
 
-        <div className="min-h-0 overflow-y-auto p-4 text-sm text-zinc-800 dark:text-zinc-100">
+        <div className="min-h-0 overflow-y-auto p-4 text-sm text-zinc-800">
           {profile?.specialty?.trim() ? (
             <div>
-              <span className="font-semibold text-zinc-900 dark:text-zinc-50">التخصص:</span>{" "}
+              <span className="font-semibold text-zinc-900">التخصص:</span>{" "}
               {profile.specialty}
             </div>
           ) : (
-            <div className="text-zinc-500 dark:text-zinc-400">لا يوجد تخصص مسجّل.</div>
+            <div className="text-zinc-500">لا يوجد تخصص مسجّل.</div>
           )}
 
           {profile?.certificate?.trim() ? (
             <div className="mt-3 whitespace-pre-wrap">
-              <span className="font-semibold text-zinc-900 dark:text-zinc-50">الشهادة / المؤهل:</span>{" "}
+              <span className="font-semibold text-zinc-900">الشهادة / المؤهل:</span>{" "}
               {profile.certificate}
             </div>
           ) : null}
 
           <div className="mt-4 border-t border-(--border) pt-4">
-            <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+            <div className="text-xs font-semibold text-zinc-600">
               مرفقات الشهادة{certCount > 1 ? ` (${certCount})` : ""}
             </div>
             {loading ? <div className="mt-2 text-xs text-zinc-500">جاري تحميل المعاينات...</div> : null}
-            {err ? <div className="mt-2 text-xs text-red-600 dark:text-red-400">{err}</div> : null}
+            {err ? <div className="mt-2 text-xs text-red-600">{err}</div> : null}
 
             {!loading && !err && previews.length > 0 ? (
               <div className="mt-3 grid gap-4">
@@ -163,19 +163,19 @@ export function PhysicianInfoModal({ open, onClose, consultationId, physicianNam
                       <img
                         src={row.url}
                         alt=""
-                        className="max-h-72 w-full rounded-xl border border-(--border) object-contain bg-zinc-100/50 dark:bg-zinc-900/40"
+                        className="max-h-72 w-full rounded-xl border border-(--border) object-contain bg-zinc-100/50"
                       />
                     ) : row.mime === "application/pdf" || row.mime.includes("pdf") ? (
                       <iframe
                         title="معاينة الشهادة"
                         src={row.url}
-                        className="h-72 w-full rounded-xl border border-(--border) bg-white dark:bg-zinc-950"
+                        className="h-72 w-full rounded-xl border border-(--border) bg-white"
                       />
                     ) : (
                       <a
                         href={row.url}
                         download={row.name}
-                        className="inline-flex text-xs font-medium text-emerald-700 underline dark:text-emerald-400"
+                        className="inline-flex text-xs font-medium text-emerald-700 underline"
                       >
                         تنزيل — {row.name}
                       </a>
@@ -186,7 +186,7 @@ export function PhysicianInfoModal({ open, onClose, consultationId, physicianNam
             ) : null}
 
             {certCount === 0 && !loading ? (
-              <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+              <div className="mt-2 text-xs text-zinc-500">
                 لا يوجد مرفق مسجّل لهذه الشهادة.
               </div>
             ) : null}

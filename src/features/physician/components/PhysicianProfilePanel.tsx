@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { LocalFilePicker } from "@/components/ui/LocalFilePicker";
+import { ImageCropModal } from "@/components/ui/ImageCropModal";
+import { PhysicianPhotoBox } from "@/features/physician/components/PhysicianPhotoBox";
 import { triggerBlobDownload } from "@/components/BlobDownload";
 
 type CertificateFileRef = {
@@ -21,6 +23,7 @@ type PhysicianProfile = {
   certificate: string;
   certificate_file_id?: number | null;
   certificate_file_ids?: number[];
+  profile_photo_file_id?: number | null;
   certificateFile?: CertificateFileRef | null;
   certificateFiles?: CertificateFileRef[];
   verification_status?: string | null;
@@ -61,6 +64,7 @@ function normalizePhysicianProfile(raw: any): PhysicianProfile {
     certificate: raw?.certificate ?? "",
     certificate_file_id: certificateFiles[0]?.id ?? raw?.certificate_file_id ?? null,
     certificate_file_ids,
+    profile_photo_file_id: raw?.profile_photo_file_id ?? null,
     certificateFile: certificateFiles[0] ?? null,
     certificateFiles,
     verification_status: raw?.verification_status ?? null,
@@ -92,6 +96,10 @@ export function PhysicianProfilePanel({
   const [resubmitting, setResubmitting] = useState(false);
   const [profileMsg, setProfileMsg] = useState<string | null>(null);
   const [certificateUploading, setCertificateUploading] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
   const [certPreviewMap, setCertPreviewMap] = useState<
     Record<number, { url: string; kind: "image" | "pdf" }>
   >({});
@@ -233,6 +241,7 @@ export function PhysicianProfilePanel({
         specialty: profile.specialty,
         certificate: profile.certificate ?? "",
         certificate_file_ids: ids,
+        profile_photo_file_id: profile.profile_photo_file_id ?? null,
         resubmit: resubmit ? true : undefined,
       }),
     });
@@ -310,6 +319,69 @@ export function PhysicianProfilePanel({
     setProfileMsg("تم رفع الملفات. عيّن التخصص ثم احفظ لتثبيت المرفقات.");
   }
 
+  async function saveProfilePhoto(fileId: number | null) {
+    if (!profile) return;
+    setPhotoUploading(true);
+    setProfileMsg(null);
+    const res = await apiFetch<PhysicianProfileResponse>("/physician-profile", {
+      method: "PUT",
+      body: JSON.stringify({
+        specialty: profile.specialty,
+        certificate: profile.certificate ?? "",
+        certificate_file_ids: certificateList.map((f) => f.id),
+        profile_photo_file_id: fileId,
+      }),
+    });
+    setPhotoUploading(false);
+    if (!res.ok) {
+      setProfileMsg(res.message);
+      return;
+    }
+    setProfile(normalizePhysicianProfile(res.data.profile));
+    if (fileId) {
+      setPhotoPreviewUrl(null);
+    }
+    setProfileMsg(fileId ? "تم حفظ الصورة الشخصية." : "تمت إزالة الصورة الشخصية.");
+  }
+
+  async function uploadProfilePhoto(file: File) {
+    const localPreview = URL.createObjectURL(file);
+    setPhotoPreviewUrl(localPreview);
+    setPhotoUploading(true);
+    setProfileMsg(null);
+    const up = await uploadMedicalFiles([file]);
+    setPhotoUploading(false);
+    if (!up.ok) {
+      URL.revokeObjectURL(localPreview);
+      setPhotoPreviewUrl(null);
+      setProfileMsg(up.message);
+      return;
+    }
+    const fileId = up.data.files[0]?.id;
+    if (!fileId) {
+      setProfileMsg("تعذّر رفع الصورة.");
+      return;
+    }
+    await saveProfilePhoto(fileId);
+  }
+
+  function handlePhotoPick(files: File[]) {
+    const picked = files[0];
+    if (!picked) return;
+    if (!picked.type.startsWith("image/")) {
+      setProfileMsg("يُرجى اختيار صورة فقط للصورة الشخصية.");
+      return;
+    }
+    setCropFile(picked);
+    setCropOpen(true);
+  }
+
+  async function handleCropConfirm(cropped: File) {
+    setCropOpen(false);
+    setCropFile(null);
+    await uploadProfilePhoto(cropped);
+  }
+
   function removeCertificateAt(index: number) {
     setProfile((p) => {
       if (!p) return p;
@@ -378,6 +450,41 @@ export function PhysicianProfilePanel({
 
         {profile ? (
           <>
+            <div className="mt-5 flex flex-wrap items-center gap-4 rounded-2xl border border-(--border) bg-(--surface-2) p-4">
+              <PhysicianPhotoBox
+                key={`${profile.profile_photo_file_id ?? "none"}-${photoPreviewUrl ?? ""}`}
+                fileId={photoPreviewUrl ? null : profile.profile_photo_file_id}
+                previewUrl={photoPreviewUrl}
+                alt="صورة الطبيب"
+                size="lg"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold text-foreground">الصورة الشخصية (إثبات الهوية)</div>
+                <p className="mt-1 text-xs leading-6 text-(--muted)">
+                  صورة واضحة لوجهك. تظهر للإدارة عند التوثيق وللمراجعين في الاستشارات.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <LocalFilePicker
+                    accept="image/*"
+                    multiple={false}
+                    buttonLabel={photoUploading ? "جاري الرفع..." : "تغيير الصورة"}
+                    onPick={handlePhotoPick}
+                  />
+                  {profile.profile_photo_file_id ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={photoUploading}
+                      onClick={() => void saveProfilePhoto(null)}
+                    >
+                      إزالة الصورة
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div className="gc-profile-field">
                 <div className="gc-profile-field-label">التخصص</div>
@@ -605,6 +712,17 @@ export function PhysicianProfilePanel({
         ) : (
           <p className="mt-4 text-sm text-(--muted)">جاري تحميل معلومات الطبيب...</p>
         )}
+
+        <ImageCropModal
+          open={cropOpen}
+          file={cropFile}
+          title="قص الصورة الشخصية"
+          onClose={() => {
+            setCropOpen(false);
+            setCropFile(null);
+          }}
+          onConfirm={(cropped) => void handleCropConfirm(cropped)}
+        />
       </div>
     </Card>
   );

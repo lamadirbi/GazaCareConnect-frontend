@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
 export type MedicalProfileSummary = {
+  gender?: string | null;
+  age?: number | null;
   height_cm: number | null;
   weight_kg: number | null;
   chronic_diseases: string | null;
@@ -14,7 +16,7 @@ export type MedicalProfileSummary = {
   current_medications: string | null;
 };
 
-type Props = {
+import { genderLabel } from "@/lib/medicalProfile";
   title?: string;
   subtitle?: string;
   profile: MedicalProfileSummary;
@@ -53,6 +55,11 @@ export function MedicalProfileSummaryCard({
 }: Props) {
   const fields = (
     <div className="grid gap-2.5 sm:grid-cols-2">
+      <ProfileField label="الجنس" value={genderLabel(profile.gender)} />
+      <ProfileField
+        label="العمر"
+        value={profile.age != null ? <span dir="ltr">{profile.age} سنة</span> : "غير محدد"}
+      />
       <ProfileField
         label="الطول"
         value={

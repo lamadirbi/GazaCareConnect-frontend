@@ -55,7 +55,7 @@ export function ConsultationDetailHeader({
           </span>
           <ConsultationStatusBadge status={status} physicianResponse={physicianResponse} />
           {assignmentMode === "direct" ? (
-            <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-900 dark:border-sky-900/40 dark:bg-sky-950/40 dark:text-sky-100">
+            <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-900">
               طبيب محدّد
             </span>
           ) : assignmentMode === "queue" ? (
@@ -84,7 +84,7 @@ export function ConsultationDetailHeader({
       </div>
 
       {waiting ? (
-        <p className="mt-4 rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-900 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-100">
+        <p className="mt-4 rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-900">
           {isPhysician
             ? "لم تُرسل رداً بعد. اكتب توصياتك في النموذج أدناه."
             : "استشارتك بانتظار رد الطبيب. ستصلك التوصيات هنا عند الانتهاء."}
@@ -92,7 +92,7 @@ export function ConsultationDetailHeader({
       ) : null}
 
       {inReview ? (
-        <p className="mt-4 rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
+        <p className="mt-4 rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-900">
           {isPhysician
             ? "بدأت بكتابة الرد — يمكنك إكماله أو تعديله أدناه."
             : "الطبيب بدأ بمراجعة حالتك — تابع التحديثات هنا."}

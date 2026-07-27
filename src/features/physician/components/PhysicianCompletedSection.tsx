@@ -35,7 +35,7 @@ export function PhysicianCompletedSection({ items, loading, error }: Props) {
 
   return (
     <section id="physician-completed" className="mt-10 scroll-mt-28">
-      <div className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+      <div className="mb-3 text-sm font-semibold text-zinc-900">
         استشارات منتهية
       </div>
       <p className="mb-3 text-xs text-(--muted)">

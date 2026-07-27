@@ -1,8 +1,5 @@
 @import "tailwindcss";
 
-/* الوضع الفاتح فقط — لا يتأثر بإعدادات النظام الليلية */
-@custom-variant dark (&:not(*));
-
 html {
   color-scheme: light;
 }
@@ -955,14 +952,16 @@ textarea::placeholder {
 /* ── Landing mobile nav & side drawer ── */
 
 .gc-nav-toggle {
-  gap: 5px;
+  gap: 0;
   width: 2.5rem;
   height: 2.5rem;
-  padding: 0.5rem;
+  padding: 0;
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--surface);
   transition: background-color 150ms ease;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 63.999rem) {
