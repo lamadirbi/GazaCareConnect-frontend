@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { genderLabel } from "@/lib/medicalProfile";
+import { AgeValue } from "@/components/AgeValue";
 
 export type MedicalProfileSummary = {
   gender?: string | null;
@@ -59,7 +60,7 @@ export function MedicalProfileSummaryCard({
       <ProfileField label="الجنس" value={genderLabel(profile.gender)} />
       <ProfileField
         label="العمر"
-        value={profile.age != null ? <span dir="ltr">{profile.age} سنة</span> : "غير محدد"}
+        value={<AgeValue age={profile.age} />}
       />
       <ProfileField
         label="الطول"

@@ -13,6 +13,7 @@ import { CaregiverModeModal } from "@/components/CaregiverModeModal";
 import { caregiverRelationshipLabel } from "@/lib/caregiver";
 import type { CaregiverRelationship } from "@/lib/caregiver";
 import { genderLabel } from "@/lib/medicalProfile";
+import { AgeValue } from "@/components/AgeValue";
 
 type MedicalProfile = {
   gender: string | null;
@@ -213,12 +214,7 @@ export default function DashboardPage() {
                       },
                       {
                         label: "العمر",
-                        value:
-                          profile?.age != null ? (
-                            <span dir="ltr">{profile.age} سنة</span>
-                          ) : (
-                            "غير محدد"
-                          ),
+                          value: <AgeValue age={profile?.age} />,
                       },
                       {
                         label: "الطول",

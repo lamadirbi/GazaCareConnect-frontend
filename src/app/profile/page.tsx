@@ -25,6 +25,7 @@ type MedicalProfile = {
 };
 
 import { genderLabel } from "@/lib/medicalProfile";
+import { AgeValue } from "@/components/AgeValue";
 
 type ProfileResponse = { profile: MedicalProfile };
 
@@ -131,7 +132,7 @@ export default function ProfilePage() {
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3">
                 <div className="text-xs text-zinc-500">العمر</div>
                 <div className="mt-1 font-medium">
-                  {profile.age != null ? <span dir="ltr">{profile.age} سنة</span> : "غير محدد"}
+                  <AgeValue age={profile.age} />
                 </div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3">
@@ -208,19 +209,22 @@ export default function ProfilePage() {
 
                   <label className="grid gap-1">
                     <span className="text-sm font-medium text-zinc-800">العمر</span>
-                    <input
-                      value={profile.age ?? ""}
-                      onChange={(e) =>
-                        setProfile({
-                          ...profile,
-                          age: e.target.value ? Number(e.target.value) : null,
-                        })
-                      }
-                      inputMode="numeric"
-                      min={1}
-                      max={120}
-                      className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring)"
-                    />
+                    <div className="flex items-center gap-2" dir="rtl">
+                      <input
+                        value={profile.age ?? ""}
+                        onChange={(e) =>
+                          setProfile({
+                            ...profile,
+                            age: e.target.value ? Number(e.target.value) : null,
+                          })
+                        }
+                        inputMode="numeric"
+                        min={1}
+                        max={120}
+                        className="h-11 min-w-0 flex-1 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring)"
+                      />
+                      <span className="shrink-0 text-sm text-(--muted)">سنة</span>
+                    </div>
                   </label>
 
                   <label className="grid gap-1">

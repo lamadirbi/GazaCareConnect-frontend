@@ -8,6 +8,7 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { BrandLogo } from "@/components/BrandLogo";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 
 type LoginResponse = {
   user: { id: number; name: string; email: string; role: string };
@@ -96,14 +97,12 @@ export default function LoginPage() {
                 <span className="text-sm font-medium text-zinc-800">
                   كلمة المرور
                 </span>
-                <input
+                <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  type="password"
                   autoComplete="current-password"
                   required
                   placeholder="••••••••"
-                  className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring)"
                 />
               </label>
 

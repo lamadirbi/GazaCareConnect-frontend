@@ -9,6 +9,7 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { BrandLogo } from "@/components/BrandLogo";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { LocalFilePicker } from "@/components/ui/LocalFilePicker";
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { PhysicianPhotoBox } from "@/features/physician/components/PhysicianPhotoBox";
@@ -356,12 +357,11 @@ export default function RegisterPage() {
               <span className="text-sm font-medium text-zinc-800">
                 كلمة المرور
               </span>
-              <input
+              <PasswordInput
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                type="password"
                 required
-                className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
+                className="border-zinc-200 bg-white focus:ring-zinc-900/10"
               />
               {passwordHint ? (
                 <span className="text-xs text-zinc-500">
