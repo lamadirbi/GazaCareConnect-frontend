@@ -15,6 +15,7 @@ import { postConsultationMessage, type ConsultationMessage } from "@/features/co
 import { MedicalProfileSummaryCard } from "@/features/profile";
 import { formatPatientWithRelationship } from "@/lib/caregiver";
 import type { CaseSeverity } from "@/lib/caseSeverity";
+import { physicianPhotoFileId } from "@/features/physician/physicianPhoto";
 
 type MedicalFileRow = {
   id: number;
@@ -56,8 +57,16 @@ type Consultation = {
     id: number;
     name: string;
     role: string;
-    physicianProfile?: { source?: string } | null;
-    physician_profile?: { specialty?: string; certificate?: string } | null;
+    physicianProfile?: {
+      specialty?: string;
+      certificate?: string;
+      profile_photo_file_id?: number | null;
+    } | null;
+    physician_profile?: {
+      specialty?: string;
+      certificate?: string;
+      profile_photo_file_id?: number | null;
+    } | null;
   };
   medical_files?: MedicalFileRow[];
   messages?: ConsultationMessage[];
@@ -190,6 +199,9 @@ export default function PhysicianConsultationPage() {
   const med = consultation?.patient?.medicalProfile;
   const messages = consultation?.messages ?? [];
   const hasPhysicianReply = messages.some((m) => m.sender_role === "physician");
+  const consultationPhysicianProfile =
+    consultation?.physician?.physicianProfile ?? consultation?.physician?.physician_profile ?? null;
+  const activePhysicianPhotoId = physicianPhotoFileId(consultationPhysicianProfile);
 
   return (
     <PageLoadingGate
@@ -263,6 +275,8 @@ export default function PhysicianConsultationPage() {
                   <ConsultationThread
                     messages={messages}
                     canReply
+                    physicianPhotoFileId={activePhysicianPhotoId}
+                    physicianName={consultation.physician?.name ?? user?.name ?? null}
                     submitting={replying}
                     onSubmitReply={sendFollowUp}
                     replyPlaceholder="تابع الرد مع المراجع..."

@@ -26,6 +26,7 @@ export type CertificateFileRef = {
 export type PhysicianProfileData = {
   specialty: string;
   certificate: string;
+  profile_photo_file_id?: number | null;
   certificate_file_id?: number | null;
   certificate_file_ids?: number[];
   certificateFile?: CertificateFileRef | null;

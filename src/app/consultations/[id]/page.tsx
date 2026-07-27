@@ -27,6 +27,7 @@ import {
   type PhysicianProfileData,
 } from "@/features/consultations";
 import { CaseSeverityBadge } from "@/components/CaseSeverityBadge";
+import { physicianPhotoFileId } from "@/features/physician/physicianPhoto";
 
 function normalizeMessages(raw: ConsultationDetail): ConsultationMessage[] {
   const list = (raw.messages ?? []) as ConsultationMessage[];
@@ -378,6 +379,8 @@ export default function ConsultationDetailPage() {
                   <ConsultationThread
                     messages={messages}
                     canReply={canReply}
+                    physicianPhotoFileId={physicianPhotoFileId(physicianProfileFor(consultation.physician))}
+                    physicianName={consultation.physician?.name ?? null}
                     submitting={replying}
                     onSubmitReply={sendReply}
                     replyPlaceholder="اكتب سؤالاً متابعة أو توضيحاً للطبيب..."

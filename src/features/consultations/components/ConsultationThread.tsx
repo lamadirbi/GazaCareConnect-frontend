@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { PhysicianPhotoBox } from "@/features/physician/components/PhysicianPhotoBox";
 import type { ConsultationMessage } from "../types";
 
 type Props = {
   messages: ConsultationMessage[];
   canReply: boolean;
+  physicianPhotoFileId?: number | null;
+  physicianName?: string | null;
   replyPlaceholder?: string;
   submitting?: boolean;
   onSubmitReply?: (body: string) => Promise<void> | void;
@@ -26,6 +29,8 @@ function formatTime(iso: string) {
 export function ConsultationThread({
   messages,
   canReply,
+  physicianPhotoFileId,
+  physicianName,
   replyPlaceholder = "اكتب ردك هنا...",
   submitting = false,
   onSubmitReply,
@@ -70,24 +75,33 @@ export function ConsultationThread({
                     : "border-(--border) bg-(--surface-2)"
                 }`}
               >
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <span
-                    className={`font-semibold ${
-                      isPhysician
-                        ? "text-emerald-800"
-                        : "text-foreground"
-                    }`}
-                  >
-                    {isPhysician ? "الطبيب" : "المراجع"}
-                    {m.sender?.name ? ` — ${m.sender.name}` : ""}
-                  </span>
-                  <span className="text-(--muted)" dir="ltr">
-                    {formatTime(m.created_at)}
-                  </span>
+                <div className="flex items-start gap-3">
+                  {isPhysician ? (
+                    <PhysicianPhotoBox
+                      fileId={physicianPhotoFileId}
+                      alt={physicianName ?? m.sender?.name ?? "الطبيب"}
+                      size="md"
+                    />
+                  ) : null}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span
+                        className={`font-semibold ${
+                          isPhysician ? "text-emerald-800" : "text-foreground"
+                        }`}
+                      >
+                        {isPhysician ? "الطبيب" : "المراجع"}
+                        {m.sender?.name ? ` — ${m.sender.name}` : ""}
+                      </span>
+                      <span className="text-(--muted)" dir="ltr">
+                        {formatTime(m.created_at)}
+                      </span>
+                    </div>
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-foreground">
+                      {m.body}
+                    </p>
+                  </div>
                 </div>
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-foreground">
-                  {m.body}
-                </p>
               </div>
             );
           })

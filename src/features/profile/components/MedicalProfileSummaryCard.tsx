@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { genderLabel } from "@/lib/medicalProfile";
 
 export type MedicalProfileSummary = {
   gender?: string | null;
@@ -16,7 +17,7 @@ export type MedicalProfileSummary = {
   current_medications: string | null;
 };
 
-import { genderLabel } from "@/lib/medicalProfile";
+type Props = {
   title?: string;
   subtitle?: string;
   profile: MedicalProfileSummary;

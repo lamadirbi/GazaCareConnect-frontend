@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { CaregiverModeModal } from "@/components/CaregiverModeModal";
 import { caregiverRelationshipLabel } from "@/lib/caregiver";
+import type { CaregiverRelationship } from "@/lib/caregiver";
 import { genderLabel } from "@/lib/medicalProfile";
 
 type MedicalProfile = {

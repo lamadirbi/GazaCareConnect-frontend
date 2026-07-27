@@ -9,12 +9,14 @@ import { PageLoadingGate } from "@/components/PageLoadingGate";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
+import { PhysicianPhotoBox } from "@/features/physician/components/PhysicianPhotoBox";
 
 type VerifiedPhysician = {
   id: number;
   user_id: number;
   specialty: string;
   certificate: string;
+  profile_photo_file_id?: number | null;
   user?: { id: number; name: string; email: string };
 };
 
@@ -91,19 +93,28 @@ export default function VerifiedPhysiciansPage() {
                 {rows.map((row) => (
                   <Card key={row.id}>
                     <CardBody className="p-5">
-                      <div className="font-semibold text-zinc-900">
-                        {row.user?.name}
-                      </div>
-                      <div className="mt-1 text-sm text-(--gc-accent)">{row.specialty}</div>
-                      <p className="mt-3 line-clamp-3 text-sm text-zinc-600">
-                        {row.certificate}
-                      </p>
-                      <div className="mt-4">
-                        <Link
-                          href={`/consultations/new?physician_id=${row.user?.id ?? ""}&mode=direct`}
-                        >
-                          <Button size="sm">إرسال استشارة لهذا الطبيب</Button>
-                        </Link>
+                      <div className="flex items-start gap-4">
+                        <PhysicianPhotoBox
+                          fileId={row.profile_photo_file_id}
+                          alt={row.user?.name ?? "طبيب"}
+                          size="md"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-zinc-900">
+                            {row.user?.name}
+                          </div>
+                          <div className="mt-1 text-sm text-(--gc-accent)">{row.specialty}</div>
+                          <p className="mt-3 line-clamp-3 text-sm text-zinc-600">
+                            {row.certificate}
+                          </p>
+                          <div className="mt-4">
+                            <Link
+                              href={`/consultations/new?physician_id=${row.user?.id ?? ""}&mode=direct`}
+                            >
+                              <Button size="sm">إرسال استشارة لهذا الطبيب</Button>
+                            </Link>
+                          </div>
+                        </div>
                       </div>
                     </CardBody>
                   </Card>
