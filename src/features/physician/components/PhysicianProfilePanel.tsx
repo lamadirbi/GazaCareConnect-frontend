@@ -21,7 +21,6 @@ type CertificateFileRef = {
 type PhysicianProfile = {
   specialty: string;
   certificate: string;
-  certificate_file_id?: number | null;
   certificate_file_ids?: number[];
   profile_photo_file_id?: number | null;
   certificateFile?: CertificateFileRef | null;
@@ -62,7 +61,6 @@ function normalizePhysicianProfile(raw: any): PhysicianProfile {
   return {
     specialty: raw?.specialty ?? "",
     certificate: raw?.certificate ?? "",
-    certificate_file_id: certificateFiles[0]?.id ?? raw?.certificate_file_id ?? null,
     certificate_file_ids,
     profile_photo_file_id: raw?.profile_photo_file_id ?? null,
     certificateFile: certificateFiles[0] ?? null,
@@ -294,7 +292,6 @@ export function PhysicianProfilePanel({
       certificateFiles: mergedFiles,
       certificate_file_ids: mergedIds,
       certificateFile: mergedFiles[0] ?? null,
-      certificate_file_id: mergedIds[0] ?? null,
     };
     setProfile(next);
     setCertificateUploading(false);
@@ -393,7 +390,6 @@ export function PhysicianProfilePanel({
         certificateFiles: nextList,
         certificate_file_ids: ids,
         certificateFile: nextList[0] ?? null,
-        certificate_file_id: ids[0] ?? null,
       };
     });
   }
