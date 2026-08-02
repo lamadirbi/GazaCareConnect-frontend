@@ -204,7 +204,7 @@ export default async function Home() {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-foreground">ما الذي نقدّمه؟</h2>
             <p className="mt-2 text-sm text-(--muted)">
-              اللي بتحتاجه لاستشارة طبية عن بُعد
+              كل ما تحتاجه لإجراء استشارة طبية عن بُعد
             </p>
           </div>
 
@@ -267,7 +267,7 @@ export default async function Home() {
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between">
           <BrandLogo href="/" size="md" showTitle showTagline />
           <p className="text-xs text-(--muted) sm:text-sm">
-            (c) {new Date().getFullYear()} GazaCare Connect — مشروع تخرج
+            &copy; {new Date().getFullYear()} GazaCare Connect — مشروع تخرج
           </p>
         </div>
       </footer>

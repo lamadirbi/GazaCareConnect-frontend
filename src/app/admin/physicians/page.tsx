@@ -63,13 +63,15 @@ function formatBytes(bytes?: number | null) {
 
 function formatDate(value?: string | null) {
   if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
   try {
-    return new Intl.DateTimeFormat("ar", {
+    return new Intl.DateTimeFormat("ar-EG", {
       dateStyle: "medium",
       timeStyle: "short",
-    }).format(new Date(value));
+    }).format(d);
   } catch {
-    return value;
+    return d.toLocaleString("ar");
   }
 }
 
