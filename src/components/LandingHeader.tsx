@@ -9,7 +9,6 @@ const navLinks = [
   { href: "#how", label: "كيف تعمل؟" },
   { href: "#services", label: "خدماتنا" },
   { href: "#faq", label: "أسئلة شائعة" },
-  { href: "#resources", label: "الموارد والتوثيق" },
 ] as const;
 
 export function LandingHeader() {

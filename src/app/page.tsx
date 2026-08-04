@@ -72,50 +72,6 @@ const faqs = [
   },
 ];
 
-const projectResources = [
-  {
-    label: "توثيق المشروع (PDF)",
-    desc: "وثيقة المشروع الكاملة للتحميل",
-    href: "/docs/GazaCareConnect-Documentation.pdf",
-    download: true,
-  },
-  {
-    label: "ملحق أ: إحصائيات الاستبيان",
-    desc: "بيانات وإحصائيات الفصل الثالث",
-    href: "https://docs.google.com/spreadsheets/d/1RtWErAtQlgQwOB8UUtPLV7tVUgr8jahN/edit?usp=drive_link&ouid=116200435113213369578&rtpof=true&sd=true",
-  },
-  {
-    label: "ملحق ب: عيوب المنصات السابقة",
-    desc: "توثيق نقاط ضعف المنصات ذات الصلة",
-    href: "https://drive.google.com/file/d/1XqZz6WIOdI0pDTbi9WIBoUOdjeXV1JYV/view?usp=sharing",
-  },
-  {
-    label: "ملحق ج: مستودع الباك اند",
-    desc: "الكود المصدري لخادم Laravel",
-    href: "https://github.com/lamadirbi/GazaCareConnect-backend",
-  },
-  {
-    label: "ملحق ج: مستودع الفرونت اند",
-    desc: "الكود المصدري لواجهة Next.js",
-    href: "https://github.com/lamadirbi/GazaCareConnect-frontend",
-  },
-  {
-    label: "ملحق د: النسخة التجريبية",
-    desc: "المنصة الحية على Netlify",
-    href: "https://gazacareconnect.netlify.app/",
-  },
-  {
-    label: "ملحق هـ: خطة الاختبار",
-    desc: "خطة اختبار النظام",
-    href: "https://drive.google.com/file/d/19TrhEm1MVjwikXOv5UI4GDDuasFbqYOn/view?usp=sharing",
-  },
-  {
-    label: "ملحق و: تصميم الواجهات",
-    desc: "ملفات UI/UX على Figma",
-    href: "https://www.figma.com/design/R9aQTe6Q0VIsQ0TCX7GdZe/gazacareconnect?node-id=5-584&t=QEazAm5Bt7hmu4Wx-1",
-  },
-] as const;
-
 export default async function Home() {
   const platformStats = await fetchPlatformStats();
   const stats = buildStatCards(platformStats);
@@ -154,13 +110,6 @@ export default async function Home() {
                   <Link href="/login" className="gc-btn gc-btn-secondary min-w-[140px]">
                     لدي حساب
                   </Link>
-                  <a
-                    href="/docs/GazaCareConnect-Documentation.pdf"
-                    download
-                    className="gc-btn gc-btn-secondary min-w-[140px]"
-                  >
-                    تحميل التوثيق
-                  </a>
                 </div>
 
                 <div className="mt-10 grid grid-cols-3 gap-3">
@@ -310,40 +259,6 @@ export default async function Home() {
                 <p className="mt-3 text-sm leading-7 text-(--muted)">{x.a}</p>
               </details>
             ))}
-          </div>
-        </section>
-
-        <section id="resources" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-16">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-foreground">الموارد والتوثيق</h2>
-            <p className="mt-2 text-sm text-(--muted)">
-              توثيق المشروع وروابط الملاحق في مكان واحد
-            </p>
-          </div>
-
-          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {projectResources.map((item) => {
-              const isDownload = "download" in item && item.download;
-              return (
-              <a
-                key={item.href + item.label}
-                href={item.href}
-                {...(isDownload
-                  ? { download: true }
-                  : { target: "_blank", rel: "noopener noreferrer" })}
-                className="gc-service-card gc-glass group rounded-2xl p-5 transition hover:-translate-y-0.5"
-              >
-                <div className="gc-service-accent" aria-hidden />
-                <div className="text-sm font-bold text-foreground group-hover:text-(--gc-accent)">
-                  {item.label}
-                </div>
-                <p className="mt-2 text-sm leading-6 text-(--muted)">{item.desc}</p>
-                <span className="mt-4 inline-flex text-xs font-bold text-(--gc-accent)">
-                  {isDownload ? "تحميل الملف ←" : "فتح الرابط ←"}
-                </span>
-              </a>
-              );
-            })}
           </div>
         </section>
       </main>
