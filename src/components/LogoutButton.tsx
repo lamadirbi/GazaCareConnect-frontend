@@ -4,22 +4,24 @@ import { logoutAndRedirect } from "@/lib/auth";
 import { Button } from "@/components/ui/Button";
 import { FaIcon } from "@/components/FaIcon";
 import { cn } from "@/lib/cn";
+import { useLang } from "@/lib/i18n";
 
 type Props = {
   className?: string;
-  /** أيقونة فقط — للشاشات الصغيرة */
   iconOnly?: boolean;
 };
 
 export function LogoutButton({ className, iconOnly = false }: Props) {
+  const { t } = useLang();
+
   if (iconOnly) {
     return (
       <button
         type="button"
         onClick={() => logoutAndRedirect("/login")}
         className={cn("gc-logout-icon-btn", className)}
-        aria-label="تسجيل الخروج"
-        title="تسجيل الخروج"
+        aria-label={t("navLogout")}
+        title={t("navLogout")}
       >
         <FaIcon icon="right-from-bracket" className="text-base" />
       </button>
@@ -32,10 +34,10 @@ export function LogoutButton({ className, iconOnly = false }: Props) {
       size="sm"
       onClick={() => logoutAndRedirect("/login")}
       className={className}
-      aria-label="تسجيل الخروج"
-      title="تسجيل الخروج"
+      aria-label={t("navLogout")}
+      title={t("navLogout")}
     >
-      تسجيل الخروج
+      {t("navLogout")}
     </Button>
   );
 }

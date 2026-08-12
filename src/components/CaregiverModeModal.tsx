@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import { CAREGIVER_RELATIONSHIPS, type CaregiverRelationship } from "@/lib/caregiver";
+import { getCaregiverRelationshipLabel, useLang } from "@/lib/i18n";
 
 type Props = {
   open: boolean;
@@ -20,6 +21,7 @@ export function CaregiverModeModal({
   onConfirm,
   onClose,
 }: Props) {
+  const { t, lang } = useLang();
   const [mounted, setMounted] = useState(false);
   const [relationship, setRelationship] = useState<CaregiverRelationship | "">("");
 
@@ -65,14 +67,11 @@ export function CaregiverModeModal({
     >
       <div className="gc-confirm-modal" onMouseDown={(e) => e.stopPropagation()}>
         <h2 id="gc-caregiver-modal-title" className="gc-confirm-modal-title">
-          تفعيل وضع مرافق المريض
+          {t("caregiverModalTitle")}
         </h2>
-        <p className="gc-confirm-modal-message">
-          حدّد صلة قرابتك بالمريض الذي ترافقه. ستظهر هذه المعلومة للطبيب والإدارة عند
-          إرسال الاستشارات.
-        </p>
+        <p className="gc-confirm-modal-message">{t("caregiverModalDesc")}</p>
         <label className="mt-4 block text-sm font-medium text-foreground" htmlFor="caregiver-relationship">
-          صلة القرابة
+          {t("caregiverRelationshipLabel")}
         </label>
         <select
           id="caregiver-relationship"
@@ -81,16 +80,16 @@ export function CaregiverModeModal({
           className="mt-2 w-full rounded-xl border border-(--border) bg-(--surface) px-3 py-2.5 text-sm"
           disabled={saving}
         >
-          <option value="">اختر صلة القرابة...</option>
+          <option value="">{t("caregiverRelationshipPlaceholder")}</option>
           {CAREGIVER_RELATIONSHIPS.map((r) => (
             <option key={r.value} value={r.value}>
-              {r.label}
+              {getCaregiverRelationshipLabel(lang, r.value)}
             </option>
           ))}
         </select>
         <div className="gc-confirm-modal-actions mt-5">
           <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={onClose} disabled={saving}>
-            إلغاء
+            {t("cancel")}
           </Button>
           <Button
             type="button"
@@ -100,7 +99,7 @@ export function CaregiverModeModal({
               if (relationship) onConfirm(relationship);
             }}
           >
-            {saving ? "جاري الحفظ..." : "تفعيل"}
+            {saving ? t("saving") : t("caregiverActivate")}
           </Button>
         </div>
       </div>

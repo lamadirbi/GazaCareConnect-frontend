@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { PhysicianPhotoBox } from "@/features/physician/components/PhysicianPhotoBox";
 import type { ConsultationMessage } from "../types";
+import { useLang } from "@/lib/i18n";
 
 type Props = {
   messages: ConsultationMessage[];
@@ -15,9 +16,9 @@ type Props = {
   onSubmitReply?: (body: string) => Promise<void> | void;
 };
 
-function formatTime(iso: string) {
+function formatTime(iso: string, locale: string) {
   try {
-    return new Date(iso).toLocaleString("ar-EG", {
+    return new Date(iso).toLocaleString(locale, {
       dateStyle: "medium",
       timeStyle: "short",
     });
@@ -31,18 +32,21 @@ export function ConsultationThread({
   canReply,
   physicianPhotoFileId,
   physicianName,
-  replyPlaceholder = "اكتب ردك هنا...",
+  replyPlaceholder,
   submitting = false,
   onSubmitReply,
 }: Props) {
+  const { t, lang } = useLang();
   const [draft, setDraft] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const locale = lang === "ar" ? "ar-EG" : "en-US";
+  const placeholder = replyPlaceholder ?? t("replyPlaceholder");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const body = draft.trim();
     if (body.length < 2) {
-      setLocalError("الرد قصير جداً.");
+      setLocalError(t("replyTooShort"));
       return;
     }
     if (!onSubmitReply) return;
@@ -56,13 +60,13 @@ export function ConsultationThread({
   return (
     <div className="grid gap-4">
       <div>
-        <div className="gc-section-label">المحادثة</div>
-        <p className="mt-1 text-xs text-(--muted)">ردود الاستشارة بين المراجع والطبيب</p>
+        <div className="gc-section-label">{t("conversation")}</div>
+        <p className="mt-1 text-xs text-(--muted)">{t("conversationDesc")}</p>
       </div>
 
       <div className="grid gap-3">
         {messages.length === 0 ? (
-          <p className="text-sm text-(--muted)">لا توجد رسائل بعد.</p>
+          <p className="text-sm text-(--muted)">{t("noMessagesYet")}</p>
         ) : (
           messages.map((m) => {
             const isPhysician = m.sender_role === "physician";
@@ -79,7 +83,7 @@ export function ConsultationThread({
                   {isPhysician ? (
                     <PhysicianPhotoBox
                       fileId={physicianPhotoFileId}
-                      alt={physicianName ?? m.sender?.name ?? "الطبيب"}
+                      alt={physicianName ?? m.sender?.name ?? t("doctorRole")}
                       size="md"
                     />
                   ) : null}
@@ -90,11 +94,11 @@ export function ConsultationThread({
                           isPhysician ? "text-emerald-800" : "text-foreground"
                         }`}
                       >
-                        {isPhysician ? "الطبيب" : "المراجع"}
+                        {isPhysician ? t("doctorRole") : t("patientRole")}
                         {m.sender?.name ? ` — ${m.sender.name}` : ""}
                       </span>
                       <span className="text-(--muted)" dir="ltr">
-                        {formatTime(m.created_at)}
+                        {formatTime(m.created_at, locale)}
                       </span>
                     </div>
                     <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-foreground">
@@ -111,21 +115,21 @@ export function ConsultationThread({
       {canReply && onSubmitReply ? (
         <form onSubmit={handleSubmit} className="grid gap-2">
           <label className="text-sm font-medium text-foreground" htmlFor="consultation-reply">
-            متابعة الرد
+            {t("followUpReplyLabel")}
           </label>
           <textarea
             id="consultation-reply"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={4}
-            placeholder={replyPlaceholder}
+            placeholder={placeholder}
             className="w-full rounded-xl border border-(--border) bg-(--surface) px-3 py-2 text-sm leading-6 outline-none focus:ring-2 focus:ring-(--ring)"
             disabled={submitting}
           />
           {localError ? <p className="text-sm text-red-600">{localError}</p> : null}
           <div>
             <Button type="submit" size="sm" disabled={submitting}>
-              {submitting ? "جاري الإرسال..." : "إرسال الرد"}
+              {submitting ? t("sendingReply") : t("sendReply")}
             </Button>
           </div>
         </form>

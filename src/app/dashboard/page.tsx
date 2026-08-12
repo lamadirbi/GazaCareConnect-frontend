@@ -14,6 +14,7 @@ import { caregiverRelationshipLabel } from "@/lib/caregiver";
 import type { CaregiverRelationship } from "@/lib/caregiver";
 import { genderLabel } from "@/lib/medicalProfile";
 import { AgeValue } from "@/components/AgeValue";
+import { useLang } from "@/lib/i18n";
 
 type MedicalProfile = {
   gender: string | null;
@@ -26,6 +27,7 @@ type MedicalProfile = {
 };
 
 export default function DashboardPage() {
+  const { t, lang } = useLang();
   const { user, loading, error } = useRequireAuth();
   const [profile, setProfile] = useState<MedicalProfile | null>(null);
   const [caregiverModalOpen, setCaregiverModalOpen] = useState(false);
@@ -57,11 +59,11 @@ export default function DashboardPage() {
 
   if (user?.role === "admin") {
     return (
-      <PageLoadingGate loading={loading} message="جاري التحويل إلى لوحة المدير...">
+      <PageLoadingGate loading={loading} message={t("redirectingAdmin")}>
         <div className="min-h-[calc(100vh-0px)] bg-transparent">
-          <AppHeader title="لوحة التحكم" backHref="/" userRole={user.role} />
+          <AppHeader title={t("dashboardTitle")} backHref="/" userRole={user.role} />
           <main className="mx-auto w-full max-w-5xl px-4 py-8">
-            <p className="text-sm text-zinc-500">جاري تحويلك إلى لوحة المدير...</p>
+            <p className="text-sm text-zinc-500">{t("redirectingAdmin")}</p>
           </main>
         </div>
       </PageLoadingGate>
@@ -69,10 +71,10 @@ export default function DashboardPage() {
   }
 
   function roleLabel(role: string | null | undefined) {
-    if (role === "patient") return "مراجع مسجّل";
-    if (role === "physician") return "طبيب مسجّل";
-    if (role === "admin") return "مدير النظام";
-    return "مستخدم";
+    if (role === "patient") return t("rolePatientLabel");
+    if (role === "physician") return t("rolePhysicianLabel");
+    if (role === "admin") return t("roleAdminLabel");
+    return t("roleUserLabel");
   }
 
   async function toggleCaregiverMode() {
@@ -116,10 +118,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <PageLoadingGate loading={loading} message="جاري تجهيز لوحة التحكم...">
+    <PageLoadingGate loading={loading} message={t("dashboardLoading")}>
     <div className="min-h-[calc(100vh-0px)] bg-transparent">
       <AppHeader
-        title="لوحة التحكم"
+        title={t("dashboardTitle")}
         backHref="/"
         userRole={user?.role}
       />
@@ -127,7 +129,7 @@ export default function DashboardPage() {
       <main className="mx-auto w-full max-w-5xl px-4 py-8">
         {error ? (
           <Alert variant="error">
-            {error} — تأكد أن الخادم يعمل على المنفذ <span dir="ltr">:8000</span>
+            {error} — {t("serverErrorHint")} <span dir="ltr">:8000</span>
           </Alert>
         ) : null}
 
@@ -135,7 +137,7 @@ export default function DashboardPage() {
           <div className="h-1 bg-gradient-to-l from-(--gc-accent) to-[#0b6e7a]" />
           <CardBody>
             <h1 className="text-xl font-semibold text-zinc-900">
-              لوحة التحكم
+              {t("dashboardTitle")}
             </h1>
 
             {user?.role === "patient" ? (
@@ -143,13 +145,13 @@ export default function DashboardPage() {
                 <div className="text-xs text-(--muted)">
                   {user.caregiver_mode_enabled && user.caregiver_relationship ? (
                     <>
-                      وضع مرافق المريض مفعّل — صلة القرابة:{" "}
+                      {t("caregiverActive")}{" "}
                       <span className="font-medium text-foreground">
-                        {caregiverRelationshipLabel(user.caregiver_relationship)}
+                        {caregiverRelationshipLabel(user.caregiver_relationship, lang)}
                       </span>
                     </>
                   ) : (
-                    "يمكنك تفعيل وضع مرافق المريض إذا كنت تقدّم استشارات نيابة عن قريب."
+                    t("caregiverHint")
                   )}
                 </div>
                 <Button
@@ -161,10 +163,10 @@ export default function DashboardPage() {
                   onClick={toggleCaregiverMode}
                 >
                   {caregiverSaving
-                    ? "جاري الحفظ..."
+                    ? t("saving")
                     : user.caregiver_mode_enabled
-                      ? "إيقاف وضع مرافق المريض"
-                      : "تفعيل وضع مرافق المريض"}
+                      ? t("disableCaregiver")
+                      : t("enableCaregiver")}
                 </Button>
               </div>
             ) : null}
@@ -178,14 +180,14 @@ export default function DashboardPage() {
             <p className="mt-1 text-sm text-zinc-600">
               {user ? (
                 <>
-                  مرحباً، <span className="font-medium text-foreground">{user.name}</span>
+                  {t("welcome")} <span className="font-medium text-foreground">{user.name}</span>
                   <span className="mx-2 text-zinc-300">·</span>
                   <span className="inline-flex items-center rounded-full border border-(--border) bg-(--surface-2) px-2.5 py-0.5 text-xs font-medium text-(--muted)">
                     {roleLabel(user.role)}
                   </span>
                 </>
               ) : (
-                "جاري تحميل بياناتك..."
+                t("loadingUserData")
               )}
             </p>
 
@@ -193,14 +195,12 @@ export default function DashboardPage() {
               <div className="mt-6 rounded-2xl border border-(--border) bg-(--surface-2) p-5">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">ملخص الملف الطبي</h2>
-                    <p className="mt-1 text-xs text-(--muted)">
-                      يظهر للطبيب عند مراجعة الاستشارة. يمكنك تعديله من الزر أدناه.
-                    </p>
+                    <h2 className="text-sm font-semibold text-foreground">{t("medicalSummaryTitle")}</h2>
+                    <p className="mt-1 text-xs text-(--muted)">{t("medicalSummaryDesc")}</p>
                   </div>
                   <Link href="/profile" className="shrink-0">
                     <Button variant="secondary" size="sm" className="w-full sm:w-auto">
-                      تعديل الملف الطبي
+                      {t("editMedicalProfile")}
                     </Button>
                   </Link>
                 </div>
@@ -209,46 +209,46 @@ export default function DashboardPage() {
                   {(
                     [
                       {
-                        label: "الجنس",
-                        value: genderLabel(profile?.gender),
+                        label: t("genderLabel"),
+                        value: genderLabel(profile?.gender, lang),
                       },
                       {
-                        label: "العمر",
-                          value: <AgeValue age={profile?.age} />,
+                        label: t("ageLabel"),
+                        value: <AgeValue age={profile?.age} />,
                       },
                       {
-                        label: "الطول",
+                        label: t("heightLabel"),
                         value:
                           profile?.height_cm != null ? (
                             <span dir="ltr">{profile.height_cm} cm</span>
                           ) : (
-                            "غير محدد"
+                            t("notSpecified")
                           ),
                       },
                       {
-                        label: "الوزن",
+                        label: t("weightLabel"),
                         value:
                           profile?.weight_kg != null ? (
                             <span dir="ltr">{profile.weight_kg} kg</span>
                           ) : (
-                            "غير محدد"
+                            t("notSpecified")
                           ),
                       },
                       {
-                        label: "أمراض مزمنة",
+                        label: t("chronicDiseasesLabel"),
                         value: profile?.chronic_diseases?.trim()
                           ? profile.chronic_diseases
-                          : "لا يوجد",
+                          : t("none"),
                       },
                       {
-                        label: "الحساسية",
-                        value: profile?.allergies?.trim() ? profile.allergies : "لا يوجد",
+                        label: t("allergiesLabel"),
+                        value: profile?.allergies?.trim() ? profile.allergies : t("none"),
                       },
                       {
-                        label: "الأدوية الحالية",
+                        label: t("medicationsLabel"),
                         value: profile?.current_medications?.trim()
                           ? profile.current_medications
-                          : "لا يوجد",
+                          : t("none"),
                       },
                     ] as { label: string; value: ReactNode }[]
                   ).map((row) => (
@@ -277,17 +277,11 @@ export default function DashboardPage() {
               {user?.role === "patient" ? (
                 <Card className="hover:brightness-[1.03]">
                   <CardBody className="p-5">
-                    <div className="font-semibold text-zinc-900">
-                      الأطباء الموثّقون
-                    </div>
-                    <div className="mt-1 text-sm text-zinc-600">
-                      تصفّح الأطباء وأرسل استشارة مباشرة لمن تختاره.
-                    </div>
+                    <div className="font-semibold text-zinc-900">{t("verifiedPhysiciansTitle")}</div>
+                    <div className="mt-1 text-sm text-zinc-600">{t("verifiedPhysiciansDesc")}</div>
                     <div className="mt-4">
                       <Link href="/physicians">
-                        <Button variant="secondary" size="sm">
-                          عرض الأطباء
-                        </Button>
+                        <Button variant="secondary" size="sm">{t("browsePhysicians")}</Button>
                       </Link>
                     </div>
                   </CardBody>
@@ -297,17 +291,11 @@ export default function DashboardPage() {
               {user?.role !== "patient" ? (
                 <Card className="hover:brightness-[1.03]">
                   <CardBody className="p-5">
-                    <div className="font-semibold text-zinc-900">
-                      الملف الطبي
-                    </div>
-                    <div className="mt-1 text-sm text-zinc-600">
-                      عدّل بياناتك الصحية.
-                    </div>
+                    <div className="font-semibold text-zinc-900">{t("medicalProfileTitle")}</div>
+                    <div className="mt-1 text-sm text-zinc-600">{t("medicalProfileDesc")}</div>
                     <div className="mt-4">
                       <Link href="/profile">
-                        <Button variant="secondary" size="sm">
-                          فتح الملف الطبي
-                        </Button>
+                        <Button variant="secondary" size="sm">{t("openMedicalProfile")}</Button>
                       </Link>
                     </div>
                   </CardBody>
@@ -317,22 +305,14 @@ export default function DashboardPage() {
               {user?.role === "patient" ? (
               <Card className="hover:brightness-[1.03]">
                 <CardBody className="p-5">
-                    <div className="font-semibold text-zinc-900">
-                      استشاراتي
-                    </div>
-                    <div className="mt-1 text-sm text-zinc-600">
-                      أرسل استشارة جديدة أو راجع السابقة.
-                    </div>
+                    <div className="font-semibold text-zinc-900">{t("myConsultationsTitle")}</div>
+                    <div className="mt-1 text-sm text-zinc-600">{t("myConsultationsDesc")}</div>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Link href="/consultations">
-                      <Button variant="secondary" size="sm">
-                        عرض الاستشارات
-                      </Button>
+                      <Button variant="secondary" size="sm">{t("viewConsultations")}</Button>
                     </Link>
                     <Link href="/consultations/new">
-                      <Button variant="primary" size="sm">
-                        استشارة جديدة
-                      </Button>
+                      <Button variant="primary" size="sm">{t("newConsultation")}</Button>
                     </Link>
                   </div>
                 </CardBody>

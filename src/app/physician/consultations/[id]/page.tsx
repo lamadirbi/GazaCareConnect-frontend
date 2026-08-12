@@ -16,6 +16,7 @@ import { MedicalProfileSummaryCard } from "@/features/profile";
 import { formatPatientWithRelationship } from "@/lib/caregiver";
 import type { CaseSeverity } from "@/lib/caseSeverity";
 import { physicianPhotoFileId } from "@/features/physician/physicianPhoto";
+import { useLang } from "@/lib/i18n";
 
 type MedicalFileRow = {
   id: number;
@@ -125,6 +126,7 @@ function normalizeConsultation(raw: Record<string, unknown>): Consultation {
 }
 
 export default function PhysicianConsultationPage() {
+  const { t, lang } = useLang();
   const { user, loading: authLoading } = useRequireAuth({ allowedRoles: ["physician"] });
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -156,7 +158,7 @@ export default function PhysicianConsultationPage() {
       .catch(() => {
         if (!mounted) return;
         setLoading(false);
-        setError("فشل تحميل الاستشارة");
+        setError(t("consultationLoadError"));
       });
     return () => {
       mounted = false;
@@ -206,11 +208,11 @@ export default function PhysicianConsultationPage() {
   return (
     <PageLoadingGate
       loading={authLoading || loading}
-      message="جاري تحميل تفاصيل الاستشارة..."
+      message={t("consultationDetailLoading")}
     >
     <div className="min-h-screen bg-transparent">
       <AppHeader
-        title="تفاصيل الاستشارة"
+        title={t("consultationDetailTitle")}
         backHref="/physician/dashboard"
         userRole={user?.role}
       />
@@ -234,9 +236,9 @@ export default function PhysicianConsultationPage() {
               />
               {consultation.patient?.name ? (
                 <div className="mt-2 text-xs text-zinc-500">
-                  المراجع:{" "}
+{t("patientLabel")}{" "}
                   <span className="font-medium text-foreground">
-                    {formatPatientWithRelationship(consultation.patient)}
+                    {formatPatientWithRelationship(consultation.patient, lang)}
                   </span>
                 </div>
               ) : null}
@@ -244,21 +246,21 @@ export default function PhysicianConsultationPage() {
               {med ? (
                 <div className="mt-4">
                   <MedicalProfileSummaryCard
-                    title="الملف الطبي للمراجع"
+                    title={t("patientMedicalProfile")}
                     subtitle=""
                     profile={med}
                   />
                 </div>
               ) : (
                 <div className="mt-4 rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 text-sm text-(--muted)">
-                  لا يوجد ملف طبي مكتمل لهذا المراجع.
+{t("noPatientProfile")}
                 </div>
               )}
 
               {consultation.medical_files && consultation.medical_files.length ? (
                 <div className="mt-6">
                   <div className="text-sm font-semibold text-zinc-900">
-                    الملفات المرفقة
+{t("attachedFiles")}
                   </div>
                   <div className="mt-2">
                     <MedicalFilesList
@@ -279,7 +281,7 @@ export default function PhysicianConsultationPage() {
                     physicianName={consultation.physician?.name ?? user?.name ?? null}
                     submitting={replying}
                     onSubmitReply={sendFollowUp}
-                    replyPlaceholder="تابع الرد مع المراجع..."
+                    replyPlaceholder={t("continueReply")}
                   />
                 </div>
               ) : (
@@ -297,7 +299,7 @@ export default function PhysicianConsultationPage() {
           </Card>
         ) : !error ? (
           <div className="rounded-2xl border border-(--border) bg-(--surface) p-6 text-sm text-zinc-600">
-            لم يتم العثور على الاستشارة.
+{t("consultationNotFound")}
           </div>
         ) : null}
       </main>

@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { FaIcon } from "@/components/FaIcon";
 import { cn } from "@/lib/cn";
+import { useLang } from "@/lib/i18n";
 
 type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">;
 
 export function PasswordInput({ className, ...props }: Props) {
+  const { t } = useLang();
   const [visible, setVisible] = useState(false);
 
   return (
@@ -24,7 +26,7 @@ export function PasswordInput({ className, ...props }: Props) {
         tabIndex={-1}
         onClick={() => setVisible((v) => !v)}
         className="absolute inset-y-0 end-2 flex items-center rounded-lg px-2 text-(--muted) transition hover:text-foreground"
-        aria-label={visible ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+        aria-label={visible ? t("hidePassword") : t("showPassword")}
       >
         <FaIcon icon={visible ? "eye-slash" : "eye"} className="text-sm" />
       </button>

@@ -1,7 +1,7 @@
 "use client";
 
-import { ConsultationStatusBadge, consultationStatusLabel } from "./ConsultationStatusBadge";
-import { QUEUE_ASSIGNMENT_LABEL_SHORT } from "../assignmentLabels";
+import { ConsultationStatusBadge } from "./ConsultationStatusBadge";
+import { getConsultationStatusLabel, useLang } from "@/lib/i18n";
 
 type Props = {
   id: number;
@@ -24,11 +24,12 @@ export function ConsultationDetailHeader({
   physicianName,
   variant = "patient",
 }: Props) {
+  const { t, lang } = useLang();
   const waiting = status === "pending" && !physicianResponse?.trim();
   const inReview = status === "pending" && Boolean(physicianResponse?.trim());
   const isPhysician = variant === "physician";
   const dateStr = submittedAt
-    ? new Date(submittedAt).toLocaleDateString("ar", {
+    ? new Date(submittedAt).toLocaleDateString(lang === "ar" ? "ar" : "en", {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -56,28 +57,28 @@ export function ConsultationDetailHeader({
           <ConsultationStatusBadge status={status} physicianResponse={physicianResponse} />
           {assignmentMode === "direct" ? (
             <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-900">
-              طبيب محدّد
+              {t("consultTagDirect")}
             </span>
           ) : assignmentMode === "queue" ? (
             <span className="inline-flex items-center rounded-full border border-(--border) bg-(--surface-2) px-2.5 py-1 text-xs font-semibold text-(--muted)">
-              {QUEUE_ASSIGNMENT_LABEL_SHORT}
+              {t("queueAssignmentShort")}
             </span>
           ) : null}
         </div>
         {dateStr ? (
-          <div className="text-xs text-(--muted)">أُرسلت {dateStr}</div>
+          <div className="text-xs text-(--muted)">{t("consultSubmitted")} {dateStr}</div>
         ) : null}
       </div>
 
       {assignmentMode === "direct" && physicianName && !isPhysician ? (
         <p className="mt-3 text-sm text-(--muted)">
-          موجّهة إلى:{" "}
+          {t("consultTagDirect")}:{" "}
           <span className="font-semibold text-foreground">{physicianName}</span>
         </p>
       ) : null}
 
       <div className="mt-5">
-        <div className="gc-section-label mb-2">سؤال الاستشارة</div>
+        <div className="gc-section-label mb-2">{t("consultQuestion")}</div>
         <div className="rounded-2xl border border-(--border) bg-(--surface-2) px-4 py-4">
           <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">{questionText}</p>
         </div>
@@ -85,23 +86,19 @@ export function ConsultationDetailHeader({
 
       {waiting ? (
         <p className="mt-4 rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-900">
-          {isPhysician
-            ? "لم تُرسل رداً بعد. اكتب توصياتك في النموذج أدناه."
-            : "استشارتك بانتظار رد الطبيب. ستصلك التوصيات هنا عند الانتهاء."}
+          {isPhysician ? t("consultWaitingPhysician") : t("consultWaitingPatient")}
         </p>
       ) : null}
 
       {inReview ? (
         <p className="mt-4 rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-900">
-          {isPhysician
-            ? "بدأت بكتابة الرد — يمكنك إكماله أو تعديله أدناه."
-            : "الطبيب بدأ بمراجعة حالتك — تابع التحديثات هنا."}
+          {isPhysician ? t("statusInReview") : t("consultInReviewPatient")}
         </p>
       ) : null}
 
       {status === "completed" ? (
         <p className="mt-4 text-xs text-(--muted)">
-          الحالة: {consultationStatusLabel(status, physicianResponse)}
+          {getConsultationStatusLabel(lang, status, physicianResponse)}
         </p>
       ) : null}
     </div>

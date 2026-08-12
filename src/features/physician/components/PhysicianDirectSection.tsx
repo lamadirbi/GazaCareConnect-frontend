@@ -5,6 +5,7 @@ import { ListPagination } from "@/components/ui/ListPagination";
 import { usePagedItems } from "@/components/ui/usePagedItems";
 import { ConsultationCard } from "@/features/consultations/components/ConsultationCard";
 import { formatPatientWithRelationship } from "@/lib/caregiver";
+import { useLang } from "@/lib/i18n";
 
 type Consultation = {
   id: number;
@@ -29,18 +30,15 @@ type Props = {
 const PAGE_SIZE = 3;
 
 export function PhysicianDirectSection({ items, loading, error }: Props) {
+  const { t, lang } = useLang();
   const { page, setPage, totalPages, pageSize, total, pageItems } = usePagedItems(items, {
     pageSize: PAGE_SIZE,
   });
 
   return (
     <section id="physician-direct" className="mt-10 scroll-mt-28">
-      <div className="mb-3 text-sm font-semibold text-zinc-900">
-        حالات موجّهة إليك مباشرة
-      </div>
-      <p className="mb-3 text-xs text-(--muted)">
-        استشارات وجّهها المراجع إليك مباشرة.
-      </p>
+      <div className="mb-3 text-sm font-semibold text-zinc-900">{t("physicianDirectTitle")}</div>
+      <p className="mb-3 text-xs text-(--muted)">{t("physicianDirectDesc")}</p>
       <div className="grid gap-3">
         {pageItems.map((c) => (
           <ConsultationCard
@@ -51,14 +49,14 @@ export function PhysicianDirectSection({ items, loading, error }: Props) {
             questionText={c.question_text}
             submittedAt={c.submitted_at}
             href={`/physician/consultations/${c.id}`}
-            ctaLabel="مراجعة والرد"
+            ctaLabel={t("reviewAndReply")}
             variant="physician"
-            patientName={c.patient ? formatPatientWithRelationship(c.patient) : null}
+            patientName={c.patient ? formatPatientWithRelationship(c.patient, lang) : null}
             assignmentMode={c.assignment_mode ?? "direct"}
           />
         ))}
         {!loading && !error && items.length === 0 ? (
-          <Alert variant="info">لا توجد استشارات موجّهة إليك مباشرة حالياً.</Alert>
+          <Alert variant="info">{t("noDirectCases")}</Alert>
         ) : null}
 
         <ListPagination

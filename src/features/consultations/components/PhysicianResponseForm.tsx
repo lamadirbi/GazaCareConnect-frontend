@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/Button";
 import { CASE_SEVERITIES, type CaseSeverity } from "@/lib/caseSeverity";
+import { caseSeverityLabel } from "@/lib/caseSeverity";
+import { useLang } from "@/lib/i18n";
 
 type Props = {
   value: string;
@@ -22,13 +24,14 @@ export function PhysicianResponseForm({
   onSubmitReview,
   onSubmitComplete,
 }: Props) {
+  const { t, lang } = useLang();
   const disabled = saving || value.trim().length < 5 || !severity;
 
   return (
     <div className="mt-6 grid gap-2">
-      <div className="text-sm font-semibold text-zinc-900">رد الطبيب</div>
+      <div className="text-sm font-semibold text-zinc-900">{t("physicianReplyTitle")}</div>
       <label className="sr-only" htmlFor="physician-response">
-        رد الطبيب
+        {t("physicianReplyTitle")}
       </label>
       <textarea
         id="physician-response"
@@ -39,7 +42,7 @@ export function PhysicianResponseForm({
       />
       <div className="mt-1 grid gap-1.5">
         <label htmlFor="case-severity" className="text-xs font-medium text-(--muted)">
-          مدى خطورة الحالة
+          {t("caseSeverityLabel")}
         </label>
         <select
           id="case-severity"
@@ -48,17 +51,15 @@ export function PhysicianResponseForm({
           className="max-w-xs rounded-xl border border-(--border) bg-(--surface) px-3 py-2 text-sm"
           disabled={saving}
         >
-          <option value="">اختر مستوى الحالة...</option>
+          <option value="">{t("chooseSeverity")}</option>
           {CASE_SEVERITIES.map((s) => (
             <option key={s.value} value={s.value}>
-              {s.label}
+              {caseSeverityLabel(s.value, lang)}
             </option>
           ))}
         </select>
       </div>
-      <p className="text-xs text-(--muted)">
-        «للمراجعة» تُبقي الاستشارة قيد المعالجة. «إنهاء» يحوّلها إلى مكتملة ويرسل الرد للمراجع.
-      </p>
+      <p className="text-xs text-(--muted)">{t("severityHint")}</p>
       <div className="flex flex-col gap-2 sm:flex-row">
         <Button
           type="button"
@@ -67,7 +68,7 @@ export function PhysicianResponseForm({
           onClick={onSubmitReview}
           disabled={disabled}
         >
-          {saving ? "جاري الإرسال..." : "إرسال الرد للمراجعة"}
+          {saving ? t("sendingReply") : t("sendForReview")}
         </Button>
         <Button
           type="button"
@@ -75,10 +76,9 @@ export function PhysicianResponseForm({
           onClick={onSubmitComplete}
           disabled={disabled}
         >
-          {saving ? "جاري الإرسال..." : "إنهاء الاستشارة (مكتملة)"}
+          {saving ? t("sendingReply") : t("completeConsultation")}
         </Button>
       </div>
     </div>
   );
 }
-

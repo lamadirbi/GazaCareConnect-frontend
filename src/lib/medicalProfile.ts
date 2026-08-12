@@ -1,5 +1,5 @@
-export function genderLabel(value: string | null | undefined) {
-  if (value === "male") return "ذكر";
-  if (value === "female") return "أنثى";
-  return "غير محدد";
+import { getGenderLabel, type Lang } from "@/lib/i18n";
+
+export function genderLabel(value: string | null | undefined, lang: Lang = "ar") {
+  return getGenderLabel(lang, value);
 }

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { downloadWithAuth } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { triggerBlobDownload } from "@/components/BlobDownload";
+import { useLang } from "@/lib/i18n";
 
 export type MedicalFileLite = {
   id: number;
@@ -17,11 +18,8 @@ type PreviewKind = "image" | "pdf";
 
 type Props = {
   files: MedicalFileLite[];
-  /** عرض معاينة للصور فقط أو للصور + PDF */
   preview: "images" | "images_and_pdfs";
-  /** عند true: لا نعرض اسم الملف للصور (نعرض المعاينة فقط + زر تنزيل) */
   hideImageName?: boolean;
-  /** معاملات إضافية للتنزيل (مثل consultation_id لحالات خاصة) */
   downloadQuery?: Record<string, string>;
   onError?: (message: string) => void;
 };
@@ -36,12 +34,6 @@ function isPdfFile(f: MedicalFileLite) {
   const mime = (f.mime_type ?? "").toLowerCase();
   if (mime === "application/pdf" || mime.includes("pdf")) return true;
   return f.original_name.toLowerCase().endsWith(".pdf");
-}
-
-function fileTypeLabel(f: MedicalFileLite) {
-  if (isImageFile(f)) return "صورة";
-  if (isPdfFile(f)) return "ملف PDF";
-  return "مرفق";
 }
 
 function formatBytes(bytes: number | null | undefined) {
@@ -63,9 +55,8 @@ export function MedicalFilesList({
   downloadQuery,
   onError,
 }: Props) {
-  const [previews, setPreviews] = useState<Record<number, { url: string; kind: PreviewKind }>>(
-    {},
-  );
+  const { t } = useLang();
+  const [previews, setPreviews] = useState<Record<number, { url: string; kind: PreviewKind }>>({});
 
   const previewIdsKey = useMemo(() => {
     const ids = files
@@ -122,7 +113,13 @@ export function MedicalFilesList({
       cancelled = true;
       urls.forEach((u) => URL.revokeObjectURL(u));
     };
-  }, [previewIdsKey]);
+  }, [previewIdsKey, downloadQuery, files, preview]);
+
+  function fileTypeLabel(f: MedicalFileLite) {
+    if (isImageFile(f)) return t("fileTypeImage");
+    if (isPdfFile(f)) return t("fileTypePdf");
+    return t("fileTypeAttachment");
+  }
 
   async function download(fileId: number, fallbackName: string) {
     const res = await downloadWithAuth(`/medical-files/${fileId}/download`, downloadQuery);
@@ -157,23 +154,25 @@ export function MedicalFilesList({
             ) : null}
             {prev?.kind === "pdf" ? (
               <div className="h-72 border-b border-(--border) bg-(--surface)">
-                <iframe title="معاينة ملف PDF" src={prev.url} className="h-full w-full border-0" />
+                <iframe title={t("pdfPreview")} src={prev.url} className="h-full w-full border-0" />
               </div>
             ) : null}
 
             <div className="flex items-center justify-between gap-3 px-4 py-3.5">
               <div className="flex min-w-0 items-center gap-3">
                 <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--gc-accent-soft) text-[11px] font-bold text-[#0b6e7a]">
-                  {isImg ? "صورة" : isPdfFile(f) ? "PDF" : "ملف"}
+                  {isImg ? t("fileTypeImage") : isPdfFile(f) ? "PDF" : t("fileBadge")}
                 </span>
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold text-foreground">
-                    {f.original_name}
-                  </div>
+                  {!hideImageName || !isImg ? (
+                    <div className="truncate text-sm font-semibold text-foreground">{f.original_name}</div>
+                  ) : null}
                   <div className="mt-0.5 text-xs text-(--muted)">
-                    {loadingPreview ? "جاري تحميل المعاينة..." : null}
+                    {loadingPreview ? t("loadingPreview") : null}
                     {!loadingPreview && f.size_bytes ? (
-                      <span dir="ltr">الحجم: {formatBytes(f.size_bytes)}</span>
+                      <span dir="ltr">
+                        {t("sizeLabel")} {formatBytes(f.size_bytes)}
+                      </span>
                     ) : null}
                   </div>
                 </div>
@@ -184,7 +183,7 @@ export function MedicalFilesList({
                 size="sm"
                 className="shrink-0"
               >
-                تنزيل
+                {t("download")}
               </Button>
             </div>
           </div>
@@ -193,4 +192,3 @@ export function MedicalFilesList({
     </div>
   );
 }
-

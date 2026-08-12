@@ -26,10 +26,12 @@ type MedicalProfile = {
 
 import { genderLabel } from "@/lib/medicalProfile";
 import { AgeValue } from "@/components/AgeValue";
+import { useLang } from "@/lib/i18n";
 
 type ProfileResponse = { profile: MedicalProfile };
 
 export default function ProfilePage() {
+  const { t, lang } = useLang();
   const { user, loading: authLoading } = useRequireAuth();
   const [profile, setProfile] = useState<MedicalProfile | null>(null);
   const [editing, setEditing] = useState(false);
@@ -54,7 +56,7 @@ export default function ProfilePage() {
       .catch(() => {
         if (!mounted) return;
         setLoading(false);
-        setError("فشل تحميل الملف الطبي");
+        setError(t("profileLoadError"));
       });
     return () => {
       mounted = false;
@@ -87,7 +89,7 @@ export default function ProfilePage() {
       return;
     }
     setProfile(res.data.profile);
-    setOkMsg("تم حفظ التحديثات");
+    setOkMsg(t("profileSaveSuccess"));
     setEditing(false);
   }
 
@@ -99,10 +101,10 @@ export default function ProfilePage() {
   return (
     <PageLoadingGate
       loading={authLoading || loading}
-      message="جاري تحميل الملف الطبي..."
+      message={t("profileLoading")}
     >
     <div className="min-h-screen bg-transparent">
-      <AppHeader title="الملف الطبي" backHref="/dashboard" userRole={user?.role} />
+      <AppHeader title={t("profileTitle")} backHref="/dashboard" userRole={user?.role} />
 
       <main className="mx-auto w-full max-w-5xl px-4 py-8">
         {error ? (
@@ -121,50 +123,50 @@ export default function ProfilePage() {
           <Card>
             <CardBody className="p-6">
             <div className="mt-1 text-xs text-zinc-500">
-              هذه البيانات يراها الطبيب عند مراجعة استشارتك.
+              {t("profileDesc")}
             </div>
 
             <div className="mt-4 grid gap-3 text-sm text-zinc-700 sm:grid-cols-2">
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3">
-                <div className="text-xs text-zinc-500">الجنس</div>
-                <div className="mt-1 font-medium">{genderLabel(profile.gender)}</div>
+                <div className="text-xs text-zinc-500">{t("genderLabel")}</div>
+                <div className="mt-1 font-medium">{genderLabel(profile.gender, lang)}</div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3">
-                <div className="text-xs text-zinc-500">العمر</div>
+                <div className="text-xs text-zinc-500">{t("ageLabel")}</div>
                 <div className="mt-1 font-medium">
                   <AgeValue age={profile.age} />
                 </div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3">
-                <div className="text-xs text-zinc-500">الطول</div>
+                <div className="text-xs text-zinc-500">{t("heightLabel")}</div>
                 <div className="mt-1 font-medium">
-                  {profile.height_cm ? <span dir="ltr">{profile.height_cm} cm</span> : "غير محدد"}
+                  {profile.height_cm ? <span dir="ltr">{profile.height_cm} cm</span> : t("notSpecified")}
                 </div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3">
-                <div className="text-xs text-zinc-500">الوزن</div>
+                <div className="text-xs text-zinc-500">{t("weightLabel")}</div>
                 <div className="mt-1 font-medium">
-                  {profile.weight_kg ? <span dir="ltr">{profile.weight_kg} kg</span> : "غير محدد"}
+                  {profile.weight_kg ? <span dir="ltr">{profile.weight_kg} kg</span> : t("notSpecified")}
                 </div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 sm:col-span-2">
-                <div className="text-xs text-zinc-500">أمراض مزمنة</div>
+                <div className="text-xs text-zinc-500">{t("chronicDiseasesLabel")}</div>
                 <div className="mt-1 whitespace-pre-wrap font-medium">
                   {fieldOrDash(profile.chronic_diseases)}
                 </div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 sm:col-span-2">
-                <div className="text-xs text-zinc-500">التاريخ الطبي</div>
+                <div className="text-xs text-zinc-500">{t("medicalHistoryLabel")}</div>
                 <div className="mt-1 whitespace-pre-wrap font-medium">
                   {fieldOrDash(profile.medical_history)}
                 </div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 sm:col-span-2">
-                <div className="text-xs text-zinc-500">الحساسية</div>
+                <div className="text-xs text-zinc-500">{t("allergiesLabel")}</div>
                 <div className="mt-1 whitespace-pre-wrap font-medium">{fieldOrDash(profile.allergies)}</div>
               </div>
               <div className="rounded-xl border border-(--border) bg-(--surface-2) px-4 py-3 sm:col-span-2">
-                <div className="text-xs text-zinc-500">الأدوية الحالية</div>
+                <div className="text-xs text-zinc-500">{t("medicationsLabel")}</div>
                 <div className="mt-1 whitespace-pre-wrap font-medium">
                   {fieldOrDash(profile.current_medications)}
                 </div>
@@ -182,7 +184,7 @@ export default function ProfilePage() {
                   setEditing((v) => !v);
                 }}
               >
-                {editing ? "إخفاء التعديل" : "تعديل المعلومات"}
+                {editing ? t("hideEdit") : t("editInfo")}
               </Button>
             </div>
 
@@ -190,7 +192,7 @@ export default function ProfilePage() {
               <div className="mt-4 grid gap-4 rounded-2xl border border-(--border) bg-(--surface-2) p-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="grid gap-1">
-                    <span className="text-sm font-medium text-zinc-800">الجنس</span>
+                    <span className="text-sm font-medium text-zinc-800">{t("genderLabel")}</span>
                     <select
                       value={profile.gender ?? ""}
                       onChange={(e) =>
@@ -201,14 +203,14 @@ export default function ProfilePage() {
                       }
                       className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring)"
                     >
-                      <option value="">غير محدد</option>
-                      <option value="male">ذكر</option>
-                      <option value="female">أنثى</option>
+                      <option value="">{t("notSpecified")}</option>
+                      <option value="male">{t("genderMale")}</option>
+                      <option value="female">{t("genderFemale")}</option>
                     </select>
                   </label>
 
                   <label className="grid gap-1">
-                    <span className="text-sm font-medium text-zinc-800">العمر</span>
+                    <span className="text-sm font-medium text-zinc-800">{t("ageLabel")}</span>
                     <div className="flex items-center gap-2" dir="rtl">
                       <input
                         value={profile.age ?? ""}
@@ -223,13 +225,13 @@ export default function ProfilePage() {
                         max={120}
                         className="h-11 min-w-0 flex-1 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring)"
                       />
-                      <span className="shrink-0 text-sm text-(--muted)">سنة</span>
+                      <span className="shrink-0 text-sm text-(--muted)">{t("years")}</span>
                     </div>
                   </label>
 
                   <label className="grid gap-1">
                     <span className="text-sm font-medium text-zinc-800">
-                      الطول (سم)
+{t("heightCmLabel")}
                     </span>
                     <input
                       value={profile.height_cm ?? ""}
@@ -246,7 +248,7 @@ export default function ProfilePage() {
 
                   <label className="grid gap-1">
                     <span className="text-sm font-medium text-zinc-800">
-                      الوزن (كغ)
+{t("weightKgLabel")}
                     </span>
                     <input
                       value={profile.weight_kg ?? ""}
@@ -264,7 +266,7 @@ export default function ProfilePage() {
 
                 <label className="grid gap-1">
                   <span className="text-sm font-medium text-zinc-800">
-                    أمراض مزمنة
+{t("chronicDiseasesLabel")}
                   </span>
                   <textarea
                     value={profile.chronic_diseases ?? ""}
@@ -278,7 +280,7 @@ export default function ProfilePage() {
 
                 <label className="grid gap-1">
                   <span className="text-sm font-medium text-zinc-800">
-                    التاريخ الطبي
+{t("medicalHistoryLabel")}
                   </span>
                   <textarea
                     value={profile.medical_history ?? ""}
@@ -292,7 +294,7 @@ export default function ProfilePage() {
 
                 <label className="grid gap-1">
                   <span className="text-sm font-medium text-zinc-800">
-                    الحساسية
+{t("allergiesLabel")}
                   </span>
                   <textarea
                     value={profile.allergies ?? ""}
@@ -306,7 +308,7 @@ export default function ProfilePage() {
 
                 <label className="grid gap-1">
                   <span className="text-sm font-medium text-zinc-800">
-                    الأدوية الحالية
+{t("medicationsLabel")}
                   </span>
                   <textarea
                     value={profile.current_medications ?? ""}
@@ -331,10 +333,10 @@ export default function ProfilePage() {
                       setOkMsg(null);
                     }}
                   >
-                    إلغاء
+{t("cancel")}
                   </Button>
                   <Button type="button" onClick={save} disabled={saving}>
-                    {saving ? "جاري الحفظ..." : "حفظ التعديل"}
+                    {saving ? t("saving") : t("saveChanges")}
                   </Button>
                 </div>
               </div>

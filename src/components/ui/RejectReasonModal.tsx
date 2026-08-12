@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
+import { useLang } from "@/lib/i18n";
 
 type Props = {
   open: boolean;
@@ -19,6 +20,7 @@ export function RejectReasonModal({
   onConfirm,
   onClose,
 }: Props) {
+  const { t } = useLang();
   const [mounted, setMounted] = useState(false);
   const [reason, setReason] = useState("");
 
@@ -50,6 +52,10 @@ export function RejectReasonModal({
 
   if (!open || !mounted) return null;
 
+  const message = physicianName
+    ? `${t("rejectModalMessagePrefix")} «${physicianName}». ${t("rejectModalMessageSuffix")}`
+    : t("rejectModalMessageGeneric");
+
   return createPortal(
     <div
       className="gc-confirm-modal-backdrop"
@@ -60,26 +66,19 @@ export function RejectReasonModal({
         if (e.target === e.currentTarget && !busy) onClose();
       }}
     >
-      <div
-        className="gc-confirm-modal gc-reject-modal"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
+      <div className="gc-confirm-modal gc-reject-modal" onMouseDown={(e) => e.stopPropagation()}>
         <h2 id="gc-reject-modal-title" className="gc-confirm-modal-title">
-          رفض طلب التوثيق
+          {t("rejectModalTitle")}
         </h2>
-        <p className="gc-confirm-modal-message">
-          {physicianName
-            ? `أدخل سبب رفض طلب «${physicianName}». سيظهر السبب للطبيب عند تسجيل الدخول.`
-            : "أدخل سبب الرفض. سيظهر السبب للطبيب عند تسجيل الدخول."}
-        </p>
+        <p className="gc-confirm-modal-message">{message}</p>
 
         <label className="gc-reject-modal-field">
-          <span>سبب الرفض</span>
+          <span>{t("rejectReasonLabel")}</span>
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={4}
-            placeholder="مثال: الشهادة غير واضحة أو التخصص غير مكتمل…"
+            placeholder={t("rejectReasonPlaceholder")}
             className="gc-reject-modal-textarea"
             autoFocus
             disabled={busy}
@@ -94,7 +93,7 @@ export function RejectReasonModal({
             onClick={onClose}
             disabled={busy}
           >
-            إلغاء
+            {t("cancel")}
           </Button>
           <Button
             type="button"
@@ -103,7 +102,7 @@ export function RejectReasonModal({
             disabled={busy || reason.trim().length < 3}
             onClick={() => onConfirm(reason.trim())}
           >
-            {busy ? "جاري الرفض..." : "تأكيد الرفض"}
+            {busy ? t("rejectConfirming") : t("rejectConfirm")}
           </Button>
         </div>
       </div>

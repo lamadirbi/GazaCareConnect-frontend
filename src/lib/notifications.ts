@@ -1,4 +1,5 @@
 import { apiFetch, type ApiResult } from "@/lib/api";
+import { getNotificationText, type Lang } from "@/lib/i18n";
 
 export type AppNotification = {
   id: string;
@@ -40,13 +41,18 @@ export async function markAllNotificationsRead(): Promise<
   });
 }
 
-export function formatNotificationTime(iso: string) {
+export function formatNotificationTime(iso: string, lang: Lang = "ar") {
+  const locale = lang === "ar" ? "ar-EG" : "en-US";
   try {
-    return new Date(iso).toLocaleString("ar-EG", {
+    return new Date(iso).toLocaleString(locale, {
       dateStyle: "short",
       timeStyle: "short",
     });
   } catch {
     return iso;
   }
+}
+
+export function localizedNotification(n: AppNotification, lang: Lang) {
+  return getNotificationText(lang, n);
 }

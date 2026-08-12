@@ -8,16 +8,19 @@ import { AppHeader } from "@/components/AppHeader";
 import { PageLoadingGate } from "@/components/PageLoadingGate";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
-import { ConsultationCard, getMyConsultations, QUEUE_ASSIGNMENT_SECTION_DESC, QUEUE_ASSIGNMENT_SECTION_TITLE, type ConsultationListItem } from "@/features/consultations";
+import { ConsultationCard, getMyConsultations, type ConsultationListItem } from "@/features/consultations";
+import { useLang } from "@/lib/i18n";
 
 function ConsultationSection({
   title,
   description,
   items,
+  ctaLabel,
 }: {
   title: string;
   description: string;
   items: ConsultationListItem[];
+  ctaLabel: string;
 }) {
   if (items.length === 0) return null;
 
@@ -38,7 +41,7 @@ function ConsultationSection({
           questionText={c.question_text}
           submittedAt={c.submitted_at}
           href={`/consultations/${c.id}`}
-          ctaLabel="عرض التفاصيل"
+          ctaLabel={ctaLabel}
           variant="patient"
           assignmentMode={c.assignment_mode ?? "queue"}
         />
@@ -48,6 +51,7 @@ function ConsultationSection({
 }
 
 export default function ConsultationsPage() {
+  const { t } = useLang();
   const { user, loading: authLoading } = useRequireAuth();
   const [items, setItems] = useState<ConsultationListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,9 +72,9 @@ export default function ConsultationsPage() {
       .catch(() => {
         if (!mounted.current) return;
         setLoading(false);
-        setError("فشل تحميل الاستشارات");
+        setError(t("consultationsLoadError"));
       });
-  }, []);
+  }, [mounted, t]);
 
   const grouped = useMemo(() => {
     const directPending = items.filter(
@@ -86,28 +90,23 @@ export default function ConsultationsPage() {
   const hasAny = items.length > 0;
 
   return (
-    <PageLoadingGate
-      loading={authLoading || loading}
-      message="جاري تحميل الاستشارات..."
-    >
+    <PageLoadingGate loading={authLoading || loading} message={t("consultationsLoading")}>
     <div className="min-h-screen bg-transparent">
       <AppHeader
-        title="الاستشارات"
+        title={t("navConsultations")}
         backHref="/dashboard"
         userRole={user?.role}
         primaryAction={
           <Link href="/consultations/new">
-            <Button size="sm">استشارة جديدة</Button>
+            <Button size="sm">{t("newConsultation")}</Button>
           </Link>
         }
       />
 
       <main className="mx-auto w-full max-w-5xl px-4 py-8">
         <div className="mb-6">
-          <h2 className="text-base font-semibold text-foreground">سجل الاستشارات</h2>
-          <p className="mt-1 text-sm text-(--muted)">
-            كل استشاراتك هنا
-          </p>
+          <h2 className="text-base font-semibold text-foreground">{t("consultationsHistory")}</h2>
+          <p className="mt-1 text-sm text-(--muted)">{t("consultationsHistoryDesc")}</p>
         </div>
 
         {error ? (
@@ -118,28 +117,31 @@ export default function ConsultationsPage() {
 
         <div className="grid gap-8">
           <ConsultationSection
-            title="موجّهة لطبيب محدّد"
-            description="أرسلتها لطبيب معيّن وهي بانتظار رده."
+            title={t("consultationsDirectTitle")}
+            description={t("consultationsDirectDesc")}
             items={grouped.directPending}
+            ctaLabel={t("viewDetails")}
           />
 
           <ConsultationSection
-            title={`${QUEUE_ASSIGNMENT_SECTION_TITLE} — قيد الانتظار`}
-            description={QUEUE_ASSIGNMENT_SECTION_DESC}
+            title={`${t("queueAssignmentTitle")} — ${t("consultationsQueuePending")}`}
+            description={t("queueAssignmentDesc")}
             items={grouped.queuePending}
+            ctaLabel={t("viewDetails")}
           />
 
           <ConsultationSection
-            title="مكتملة"
-            description="الطبيب رد عليها."
+            title={t("consultationsCompletedTitle")}
+            description={t("consultationsCompletedDesc")}
             items={grouped.completed}
+            ctaLabel={t("viewDetails")}
           />
 
           {!error && !hasAny ? (
             <Alert variant="info">
-              لم تُرسل أي استشارة بعد.{" "}
+              {t("consultationsEmpty")}{" "}
               <Link className="font-medium hover:underline" href="/consultations/new">
-                أرسل أول استشارة
+                {t("consultationsEmptyCta")}
               </Link>
             </Alert>
           ) : null}

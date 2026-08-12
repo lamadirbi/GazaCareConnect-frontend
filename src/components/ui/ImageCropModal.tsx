@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
+import { useLang } from "@/lib/i18n";
 
 type Props = {
   open: boolean;
@@ -17,10 +18,12 @@ const VIEWPORT = 280;
 export function ImageCropModal({
   open,
   file,
-  title = "قص الصورة",
+  title,
   onClose,
   onConfirm,
 }: Props) {
+  const { t } = useLang();
+  const resolvedTitle = title ?? t("cropDefaultTitle");
   const [mounted, setMounted] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [natural, setNatural] = useState({ w: 0, h: 0 });
@@ -131,14 +134,14 @@ export function ImageCropModal({
       className="gc-confirm-modal-backdrop"
       role="dialog"
       aria-modal="true"
-      aria-label={title}
+      aria-label={resolvedTitle}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div className="gc-confirm-modal w-full max-w-md" onMouseDown={(e) => e.stopPropagation()}>
-        <h2 className="gc-confirm-modal-title">{title}</h2>
-        <p className="gc-confirm-modal-message">اسحب الصورة واضبط التكبير ثم احفظ.</p>
+        <h2 className="gc-confirm-modal-title">{resolvedTitle}</h2>
+        <p className="gc-confirm-modal-message">{t("cropModalHint")}</p>
 
         <div
           className="relative mx-auto overflow-hidden rounded-2xl border-2 border-(--gc-accent) bg-zinc-100"
@@ -168,7 +171,7 @@ export function ImageCropModal({
         </div>
 
         <label className="mt-4 grid gap-2">
-          <span className="text-xs font-medium text-(--muted)">التكبير</span>
+          <span className="text-xs font-medium text-(--muted)">{t("cropZoomLabel")}</span>
           <input
             type="range"
             min={minScale}
@@ -183,10 +186,10 @@ export function ImageCropModal({
 
         <div className="gc-confirm-modal-actions mt-4">
           <Button type="button" variant="secondary" onClick={onClose}>
-            إلغاء
+            {t("cancel")}
           </Button>
           <Button type="button" onClick={handleConfirm} disabled={!imageReady}>
-            حفظ الصورة
+            {t("savePhoto")}
           </Button>
         </div>
       </div>

@@ -8,8 +8,11 @@ import { PageLoadingGate } from "@/components/PageLoadingGate";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
+import { PasswordInput } from "@/components/ui/PasswordInput";
+import { useLang } from "@/lib/i18n";
 
 export default function AccountPasswordPage() {
+  const { t } = useLang();
   const { user, loading: authLoading } = useRequireAuth();
   const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
@@ -20,21 +23,21 @@ export default function AccountPasswordPage() {
 
   const passwordHint = useMemo(() => {
     if (!password) return null;
-    if (password.length < 8) return "كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل.";
+    if (password.length < 8) return t("passwordNewTooShort");
     if (passwordConfirmation && password !== passwordConfirmation) {
-      return "تأكيد كلمة المرور غير متطابق.";
+      return t("passwordConfirmMismatch");
     }
     return null;
-  }, [password, passwordConfirmation]);
+  }, [password, passwordConfirmation, t]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (password.length < 8) {
-      setError("كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل.");
+      setError(t("passwordNewTooShort"));
       return;
     }
     if (password !== passwordConfirmation) {
-      setError("تأكيد كلمة المرور غير متطابق.");
+      setError(t("passwordConfirmMismatch"));
       return;
     }
 
@@ -59,10 +62,10 @@ export default function AccountPasswordPage() {
   }
 
   return (
-    <PageLoadingGate loading={authLoading} message="جاري التحميل...">
+    <PageLoadingGate loading={authLoading} message={t("loading")}>
       <div className="min-h-screen bg-transparent">
         <AppHeader
-          title="كلمة المرور"
+          title={t("navPassword")}
           backHref={user ? routeForRole(user.role) : "/dashboard"}
           userRole={user?.role}
         />
@@ -70,47 +73,39 @@ export default function AccountPasswordPage() {
         <main className="mx-auto w-full max-w-md px-4 py-8">
           <Card>
             <CardBody className="p-5 sm:p-6">
-              <h1 className="text-lg font-bold text-foreground">تغيير كلمة المرور</h1>
-              <p className="mt-1 text-sm text-(--muted)">
-                بعد التغيير ستحتاجين لتسجيل الدخول من جديد.
-              </p>
+              <h1 className="text-lg font-bold text-foreground">{t("changePasswordTitle")}</h1>
+              <p className="mt-1 text-sm text-(--muted)">{t("changePasswordSubtitle")}</p>
 
               <form onSubmit={onSubmit} className="mt-6 grid gap-4">
                 <label className="grid gap-1">
-                  <span className="text-sm font-medium">كلمة المرور الحالية</span>
-                  <input
+                  <span className="text-sm font-medium">{t("currentPasswordLabel")}</span>
+                  <PasswordInput
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    type="password"
                     autoComplete="current-password"
                     required
-                    className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm outline-none focus:ring-2 focus:ring-(--ring)"
                   />
                 </label>
 
                 <label className="grid gap-1">
-                  <span className="text-sm font-medium">كلمة المرور الجديدة</span>
-                  <input
+                  <span className="text-sm font-medium">{t("newPasswordLabel")}</span>
+                  <PasswordInput
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    type="password"
                     autoComplete="new-password"
                     required
                     minLength={8}
-                    className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm outline-none focus:ring-2 focus:ring-(--ring)"
                   />
                 </label>
 
                 <label className="grid gap-1">
-                  <span className="text-sm font-medium">تأكيد كلمة المرور الجديدة</span>
-                  <input
+                  <span className="text-sm font-medium">{t("confirmNewPasswordLabel")}</span>
+                  <PasswordInput
                     value={passwordConfirmation}
                     onChange={(e) => setPasswordConfirmation(e.target.value)}
-                    type="password"
                     autoComplete="new-password"
                     required
                     minLength={8}
-                    className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm outline-none focus:ring-2 focus:ring-(--ring)"
                   />
                 </label>
 
@@ -121,7 +116,7 @@ export default function AccountPasswordPage() {
                 {okMsg ? <Alert variant="success">{okMsg}</Alert> : null}
 
                 <Button type="submit" disabled={saving} className="w-full">
-                  {saving ? "جاري الحفظ..." : "حفظ كلمة المرور"}
+                  {saving ? t("saving") : t("changePasswordSubmit")}
                 </Button>
               </form>
             </CardBody>

@@ -10,6 +10,7 @@ import { LocalFilePicker } from "@/components/ui/LocalFilePicker";
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { PhysicianPhotoBox } from "@/features/physician/components/PhysicianPhotoBox";
 import { triggerBlobDownload } from "@/components/BlobDownload";
+import { useLang } from "@/lib/i18n";
 
 type CertificateFileRef = {
   id: number;
@@ -86,6 +87,7 @@ export function PhysicianProfilePanel({
   rejectionReason,
   onVerificationChange,
 }: Props) {
+  const { t } = useLang();
   const [profile, setProfile] = useState<PhysicianProfile | null>(() =>
     initialProfile ? normalizePhysicianProfile(initialProfile) : null,
   );
@@ -93,6 +95,7 @@ export function PhysicianProfilePanel({
   const [savingProfile, setSavingProfile] = useState(false);
   const [resubmitting, setResubmitting] = useState(false);
   const [profileMsg, setProfileMsg] = useState<string | null>(null);
+  const [profileMsgSuccess, setProfileMsgSuccess] = useState(false);
   const [certificateUploading, setCertificateUploading] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
@@ -259,10 +262,9 @@ export function PhysicianProfilePanel({
       verification_status: status,
       rejection_reason: reason,
     });
+    setProfileMsgSuccess(true);
     setProfileMsg(
-      resubmit
-        ? "تم إرسال طلب التوثيق مجدداً. ستظهر حالتك بانتظار المراجعة."
-        : "تم حفظ معلومات الطبيب",
+      resubmit ? t("verificationResent") : t("physicianInfoSaved"),
     );
     setEditingProfile(false);
   }
@@ -307,13 +309,18 @@ export function PhysicianProfilePanel({
       });
       if (saveRes.ok) {
         setProfile(normalizePhysicianProfile(saveRes.data.profile));
-        setProfileMsg(newRefs.length > 1 ? `تم رفع ${newRefs.length} مرفقات وحفظها.` : "تم رفع مرفق الشهادة وحفظه.");
+        setProfileMsgSuccess(true);
+        setProfileMsg(
+          newRefs.length > 1
+            ? t("certUploadSavedCount").replace("{count}", String(newRefs.length))
+            : t("certUploadSavedSingle"),
+        );
         return;
       }
-      setProfileMsg(saveRes.message || "تم الرفع؛ اضغط حفظ لإرفاق الملفات.");
+      setProfileMsgSuccess(false); setProfileMsg(saveRes.message || t("uploadThenSave"));
       return;
     }
-    setProfileMsg("تم رفع الملفات. عيّن التخصص ثم احفظ لتثبيت المرفقات.");
+    setProfileMsgSuccess(true); setProfileMsg(t("uploadThenSetSpecialty"));
   }
 
   async function saveProfilePhoto(fileId: number | null) {
@@ -338,7 +345,7 @@ export function PhysicianProfilePanel({
     if (fileId) {
       setPhotoPreviewUrl(null);
     }
-    setProfileMsg(fileId ? "تم حفظ الصورة الشخصية." : "تمت إزالة الصورة الشخصية.");
+    setProfileMsgSuccess(true); setProfileMsg(fileId ? t("photoSaved") : t("photoRemoved"));
   }
 
   async function uploadProfilePhoto(file: File) {
@@ -356,7 +363,7 @@ export function PhysicianProfilePanel({
     }
     const fileId = up.data.files[0]?.id;
     if (!fileId) {
-      setProfileMsg("تعذّر رفع الصورة.");
+      setProfileMsgSuccess(false); setProfileMsg(t("photoUploadFailed"));
       return;
     }
     await saveProfilePhoto(fileId);
@@ -366,7 +373,7 @@ export function PhysicianProfilePanel({
     const picked = files[0];
     if (!picked) return;
     if (!picked.type.startsWith("image/")) {
-      setProfileMsg("يُرجى اختيار صورة فقط للصورة الشخصية.");
+      setProfileMsgSuccess(false); setProfileMsg(t("photoOnlyImageError"));
       return;
     }
     setCropFile(picked);
@@ -404,9 +411,9 @@ export function PhysicianProfilePanel({
   }
 
   function certFileIcon(f: CertificateFileRef) {
-    if (isCertificateFileImage(f)) return "صورة";
+    if (isCertificateFileImage(f)) return t("fileTypeImage");
     if (isCertificateFilePdf(f)) return "PDF";
-    return "ملف";
+    return t("fileBadge");
   }
 
   return (
@@ -416,9 +423,9 @@ export function PhysicianProfilePanel({
       <div className="p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-base font-bold text-foreground">ملف الطبيب</h2>
+            <h2 className="text-base font-bold text-foreground">{t("physicianFileLabel")}</h2>
             <p className="mt-1 text-xs leading-6 text-(--muted)">
-              تظهر للمراجع عند الرد على الاستشارة.
+              {t("physicianFileDesc")}
             </p>
           </div>
           {profile && !isRejected ? (
@@ -431,7 +438,7 @@ export function PhysicianProfilePanel({
                 setEditingProfile((v) => !v);
               }}
             >
-              {editingProfile ? "إغلاق التعديل" : "تعديل الملف"}
+              {editingProfile ? t("closeEdit") : t("editFile")}
             </Button>
           ) : null}
         </div>
@@ -439,7 +446,7 @@ export function PhysicianProfilePanel({
         {isPending && !isRejected ? (
           <div className="mt-4">
             <Alert variant="info">
-              حسابك بانتظار موافقة الإدارة. لن تتمكن من عرض الحالات أو استلام الاستشارات حتى يتم توثيقك.
+{t("pendingVerification")}
             </Alert>
           </div>
         ) : null}
@@ -451,19 +458,19 @@ export function PhysicianProfilePanel({
                 key={`${profile.profile_photo_file_id ?? "none"}-${photoPreviewUrl ?? ""}`}
                 fileId={photoPreviewUrl ? null : profile.profile_photo_file_id}
                 previewUrl={photoPreviewUrl}
-                alt="صورة الطبيب"
+                alt={t("physicianPhoto")}
                 size="lg"
               />
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold text-foreground">الصورة الشخصية (إثبات الهوية)</div>
+                <div className="text-sm font-semibold text-foreground">{t("idPhotoTitle")}</div>
                 <p className="mt-1 text-xs leading-6 text-(--muted)">
-                  صورة واضحة لوجهك. تظهر للإدارة عند التوثيق وللمراجعين في الاستشارات.
+{t("idPhotoDesc")}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <LocalFilePicker
                     accept="image/*"
                     multiple={false}
-                    buttonLabel={photoUploading ? "جاري الرفع..." : "تغيير الصورة"}
+                    buttonLabel={photoUploading ? t("uploading") : t("changePhoto")}
                     onPick={handlePhotoPick}
                   />
                   {profile.profile_photo_file_id ? (
@@ -474,7 +481,7 @@ export function PhysicianProfilePanel({
                       disabled={photoUploading}
                       onClick={() => void saveProfilePhoto(null)}
                     >
-                      إزالة الصورة
+{t("removePhotoBtn")}
                     </Button>
                   ) : null}
                 </div>
@@ -483,33 +490,33 @@ export function PhysicianProfilePanel({
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div className="gc-profile-field">
-                <div className="gc-profile-field-label">التخصص</div>
+                <div className="gc-profile-field-label">{t("specialtyLabel")}</div>
                 <div className="gc-profile-field-value">
-                  {profile.specialty?.trim() ? profile.specialty : "غير محدد"}
+                  {profile.specialty?.trim() ? profile.specialty : t("notSpecified")}
                 </div>
               </div>
 
               <div className="gc-profile-field sm:col-span-2">
-                <div className="gc-profile-field-label">عدد مرفقات الشهادة</div>
+                <div className="gc-profile-field-label">{t("certCountLabel")}</div>
                 <div className="gc-profile-field-value">
                   {certificateList.length
-                    ? `${certificateList.length} مرفق`
-                    : "لا توجد مرفقات"}
+                    ? `${certificateList.length} ${t("attachmentSingular")}`
+                    : t("noAttachments")}
                 </div>
               </div>
             </div>
 
             <div className="mt-5">
-              <div className="gc-section-label mb-2">وصف المؤهل</div>
+              <div className="gc-section-label mb-2">{t("qualificationDesc")}</div>
               <div className="gc-physician-profile-text">
-                {profile.certificate?.trim() ? profile.certificate : "لم يُضف وصف بعد."}
+                {profile.certificate?.trim() ? profile.certificate : t("noQualificationYet")}
               </div>
             </div>
 
             {certificateList.length ? (
               <div className="mt-5">
                 <div className="gc-section-label mb-3">
-                  مرفقات الشهادة ({certificateList.length})
+                  {t("certAttachmentsCount").replace("{count}", String(certificateList.length))}
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {certificateList.map((cf, idx) => {
@@ -522,7 +529,7 @@ export function PhysicianProfilePanel({
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={prev.url} alt="" />
                             ) : (
-                              <iframe title={`معاينة ${cf.original_name}`} src={prev.url} />
+                              <iframe title={t("certPreviewNamed").replace("{name}", cf.original_name)} src={prev.url} />
                             )}
                           </div>
                         ) : null}
@@ -533,7 +540,7 @@ export function PhysicianProfilePanel({
                               <div className="truncate text-sm font-semibold text-foreground">
                                 {cf.original_name}
                               </div>
-                              <div className="mt-0.5 text-xs text-(--muted)">مرفق #{idx + 1}</div>
+                              <div className="mt-0.5 text-xs text-(--muted)">{t("attachmentIndex")}{idx + 1}</div>
                             </div>
                           </div>
                           <Button
@@ -543,7 +550,7 @@ export function PhysicianProfilePanel({
                             className="shrink-0"
                             onClick={() => downloadCertificateFile(cf.id, cf.original_name)}
                           >
-                            تنزيل
+{t("download")}
                           </Button>
                         </div>
                       </div>
@@ -553,16 +560,16 @@ export function PhysicianProfilePanel({
               </div>
             ) : (
               <p className="mt-5 rounded-xl border border-dashed border-(--border) bg-(--surface-2) px-4 py-3 text-xs text-(--muted)">
-                لا توجد شهادات مرفقة. يمكنك إضافتها من «تعديل البيانات».
+{t("noCertsAttached")}
               </p>
             )}
 
             {isRejected ? (
               <div className="gc-reject-banner mt-5">
-                <h3 className="gc-reject-banner-title">تم رفض طلب التوثيق</h3>
+                <h3 className="gc-reject-banner-title">{t("verificationRejected")}</h3>
                 <p className="gc-reject-banner-reason">
-                  <span className="font-semibold">سبب الرفض: </span>
-                  {localReason?.trim() || "لم تُذكر تفاصيل إضافية من الإدارة."}
+                  <span className="font-semibold">{t("rejectionReasonColon")} </span>
+                  {localReason?.trim() || t("noRejectionDetails")}
                 </p>
                 <div className="gc-reject-banner-actions">
                   <Button
@@ -574,7 +581,7 @@ export function PhysicianProfilePanel({
                       setEditingProfile(true);
                     }}
                   >
-                    تعديل البيانات
+{t("editData")}
                   </Button>
                   <Button
                     type="button"
@@ -582,7 +589,7 @@ export function PhysicianProfilePanel({
                     disabled={resubmitting || !profile?.specialty?.trim()}
                     onClick={() => void saveProfile({ resubmit: true })}
                   >
-                    {resubmitting ? "جاري الإرسال..." : "إرسال طلب مجدداً"}
+                    {resubmitting ? t("sendingReply") : t("resubmitRequest")}
                   </Button>
                 </div>
               </div>
@@ -590,16 +597,16 @@ export function PhysicianProfilePanel({
 
             {profileMsg ? (
               <div className="mt-4">
-                <Alert variant={profileMsg.includes("تم") ? "success" : "info"}>{profileMsg}</Alert>
+                <Alert variant={profileMsgSuccess ? "success" : "info"}>{profileMsg}</Alert>
               </div>
             ) : null}
 
             {editingProfile ? (
               <div className="gc-physician-edit-panel grid gap-4">
-                <div className="text-sm font-semibold text-foreground">تعديل معلومات الملف</div>
+                <div className="text-sm font-semibold text-foreground">{t("editFileInfo")}</div>
 
                 <label className="grid gap-1.5">
-                  <span className="text-sm font-medium text-foreground">التخصص</span>
+                  <span className="text-sm font-medium text-foreground">{t("specialtyLabel")}</span>
                   <input
                     value={profile.specialty}
                     onChange={(e) => setProfile((p) => (p ? { ...p, specialty: e.target.value } : p))}
@@ -608,7 +615,7 @@ export function PhysicianProfilePanel({
                 </label>
 
                 <label className="grid gap-1.5">
-                  <span className="text-sm font-medium text-foreground">وصف المؤهل (اختياري)</span>
+                  <span className="text-sm font-medium text-foreground">{t("qualificationOptional")}</span>
                   <textarea
                     value={profile.certificate}
                     onChange={(e) => setProfile((p) => (p ? { ...p, certificate: e.target.value } : p))}
@@ -619,16 +626,16 @@ export function PhysicianProfilePanel({
 
                 <div className="grid gap-2">
                   <span className="text-sm font-medium text-foreground">
-                    مرفقات الشهادة (صور أو PDF)
+{t("certAttachmentsOptional")}
                   </span>
                   <LocalFilePicker
                     accept="image/*,application/pdf"
                     multiple
-                    buttonLabel="اختيار ملفات الشهادة"
+                    buttonLabel={t("certFilesBtn")}
                     hint={
                       certificateUploading
-                        ? "جاري رفع الملفات..."
-                        : "يمكنك اختيار أكثر من ملف"
+                        ? t("uploadingLoading")
+                        : t("multiFileHint")
                     }
                     onPick={(picked) => {
                       if (picked.length) void uploadCertificateFiles(picked);
@@ -652,7 +659,7 @@ export function PhysicianProfilePanel({
                               size="sm"
                               onClick={() => downloadCertificateFile(cf.id, cf.original_name)}
                             >
-                              تنزيل
+  {t("download")}
                             </Button>
                             <Button
                               type="button"
@@ -660,14 +667,14 @@ export function PhysicianProfilePanel({
                               size="sm"
                               onClick={() => removeCertificateAt(idx)}
                             >
-                              إزالة
+{t("remove")}
                             </Button>
                           </div>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-xs text-(--muted)">لا توجد مرفقات حالياً.</p>
+                    <p className="text-xs text-(--muted)">{t("noAttachmentsNow")}</p>
                   )}
                 </div>
 
@@ -680,7 +687,7 @@ export function PhysicianProfilePanel({
                       setProfileMsg(null);
                     }}
                   >
-                    إلغاء
+{t("cancel")}
                   </Button>
                   {isRejected ? (
                     <Button
@@ -689,8 +696,8 @@ export function PhysicianProfilePanel({
                       disabled={savingProfile || resubmitting || !profile?.specialty?.trim()}
                     >
                       {resubmitting || savingProfile
-                        ? "جاري الإرسال..."
-                        : "حفظ وإرسال الطلب مجدداً"}
+                        ? t("sendingReply")
+                        : t("saveAndResubmit")}
                     </Button>
                   ) : (
                     <Button
@@ -698,7 +705,7 @@ export function PhysicianProfilePanel({
                       onClick={() => void saveProfile()}
                       disabled={savingProfile || !profile?.specialty?.trim()}
                     >
-                      {savingProfile ? "جاري الحفظ..." : "حفظ التعديل"}
+                      {savingProfile ? t("saving") : t("saveChanges")}
                     </Button>
                   )}
                 </div>
@@ -706,13 +713,13 @@ export function PhysicianProfilePanel({
             ) : null}
           </>
         ) : (
-          <p className="mt-4 text-sm text-(--muted)">جاري تحميل معلومات الطبيب...</p>
+          <p className="mt-4 text-sm text-(--muted)">{t("physicianInfoLoading")}</p>
         )}
 
         <ImageCropModal
           open={cropOpen}
           file={cropFile}
-          title="قص الصورة الشخصية"
+          title={t("cropProfilePhoto")}
           onClose={() => {
             setCropOpen(false);
             setCropFile(null);

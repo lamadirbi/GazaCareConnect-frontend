@@ -8,12 +8,13 @@ import { FaIcon } from "@/components/FaIcon";
 import { LogoutButton } from "@/components/LogoutButton";
 import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import {
   PHYSICIAN_DASHBOARD_HOME,
-  physicianDashboardSections,
   scrollToPhysicianSection,
 } from "@/features/physician/physicianNav";
 import { logoutAndRedirect } from "@/lib/auth";
+import { getPhysicianDashboardSections, useLang } from "@/lib/i18n";
 
 type Props = {
   title: string;
@@ -25,39 +26,6 @@ type Props = {
 };
 
 type NavItem = { href: string; label: string; sectionId?: string };
-
-function dashboardNavItems(role: string): NavItem[] {
-  const accountPassword = { href: "/account/password", label: "كلمة المرور" };
-  if (role === "patient") {
-    return [
-      { href: "/dashboard", label: "لوحة التحكم" },
-      { href: "/consultations", label: "الاستشارات" },
-      { href: "/physicians", label: "الأطباء" },
-      { href: "/profile", label: "الملف الطبي" },
-      accountPassword,
-    ];
-  }
-  if (role === "admin") {
-    return [
-      { href: "/admin/dashboard", label: "لوحة المدير" },
-      { href: "/admin/users", label: "المستخدمون" },
-      { href: "/admin/physicians", label: "توثيق الأطباء" },
-      accountPassword,
-    ];
-  }
-  if (role === "physician") {
-    return [
-      { href: PHYSICIAN_DASHBOARD_HOME, label: "لوحة الطبيب" },
-      ...physicianDashboardSections.map((s) => ({
-        href: s.href,
-        label: s.label,
-        sectionId: s.id,
-      })),
-      accountPassword,
-    ];
-  }
-  return [];
-}
 
 function splitHref(href: string) {
   const [path, hash = ""] = href.split("#");
@@ -89,18 +57,53 @@ function dashboardHomeHref(role: string) {
 }
 
 export function AppHeader({ title, backHref, showBack = true, rightSlot, userRole, primaryAction }: Props) {
+  const { t, lang } = useLang();
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [currentHash, setCurrentHash] = useState("");
   const [backConfirming, setBackConfirming] = useState(false);
 
+  function dashboardNavItems(role: string): NavItem[] {
+    const accountPassword = { href: "/account/password", label: t("navPassword") };
+    if (role === "patient") {
+      return [
+        { href: "/dashboard", label: t("navDashboard") },
+        { href: "/consultations", label: t("navConsultations") },
+        { href: "/physicians", label: t("navPhysicians") },
+        { href: "/profile", label: t("navProfile") },
+        accountPassword,
+      ];
+    }
+    if (role === "admin") {
+      return [
+        { href: "/admin/dashboard", label: t("navDashboard") },
+        { href: "/admin/users", label: t("navUsers") },
+        { href: "/admin/physicians", label: t("navPhysiciansAdmin") },
+        accountPassword,
+      ];
+    }
+    if (role === "physician") {
+      return [
+        { href: PHYSICIAN_DASHBOARD_HOME, label: t("navPhysicianDashboard") },
+        ...getPhysicianDashboardSections(lang).map((s) => ({
+          href: s.href,
+          label: s.label,
+          sectionId: s.id,
+        })),
+        accountPassword,
+      ];
+    }
+    return [];
+  }
+
   const navItems = useMemo(
     () => (userRole ? dashboardNavItems(userRole) : []),
-    [userRole],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [userRole, t, lang],
   );
 
-  const physicianSections = userRole === "physician" ? physicianDashboardSections : [];
+  const physicianSections = userRole === "physician" ? getPhysicianDashboardSections(lang) : [];
 
   useEffect(() => {
     const syncHash = () => setCurrentHash(window.location.hash.replace(/^#/, ""));
@@ -208,8 +211,8 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
             type="button"
             onClick={goBack}
             className="gc-back-btn"
-            aria-label="رجوع"
-            title="رجوع"
+            aria-label={t("navBack")}
+            title={t("navBack")}
           >
             <span className="gc-back-btn-icon" aria-hidden>
               <FaIcon icon="chevron-right" className="text-sm" />
@@ -222,7 +225,7 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
             type="button"
             onClick={() => setMenuOpen(true)}
             className="gc-nav-toggle lg:hidden"
-            aria-label="فتح القائمة"
+            aria-label={t("navOpenMenu")}
             aria-expanded={menuOpen}
           >
             <FaIcon icon="bars" className="text-base" />
@@ -245,6 +248,7 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
         ) : (
           <div className="hidden shrink-0 items-center gap-2 lg:flex">
             {primaryAction ? <div>{primaryAction}</div> : null}
+            <LanguageToggle />
             {userRole ? <NotificationBell /> : null}
             {userRole ? <LogoutButton /> : null}
           </div>
@@ -261,7 +265,7 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
       {showDesktopNav ? (
         <div className="gc-top-nav hidden lg:block">
           <div className="mx-auto w-full max-w-5xl px-4">
-            <nav className="gc-top-nav-inner" aria-label="تنقل لوحة التحكم">
+            <nav className="gc-top-nav-inner" aria-label={t("navMainNav")}>
               {navItems.map((item) => renderTopNavLink(item))}
             </nav>
           </div>
@@ -272,7 +276,7 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
         <>
           <button
             type="button"
-            aria-label="إغلاق القائمة"
+            aria-label={t("navCloseMenu")}
             className={`gc-side-nav-backdrop lg:hidden ${menuOpen ? "gc-side-nav-backdrop-open" : ""}`}
             onClick={closeMenu}
             tabIndex={menuOpen ? 0 : -1}
@@ -282,33 +286,36 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
             className={`gc-side-nav lg:hidden ${menuOpen ? "gc-side-nav-open" : ""}`}
             role="dialog"
             aria-modal="true"
-            aria-label="قائمة لوحة التحكم"
+            aria-label={t("navSidebarLabel")}
             aria-hidden={!menuOpen}
           >
             <div className="flex items-center justify-between border-b border-(--border) px-5 py-4">
               <Link href={dashboardHomeHref(userRole!)} onClick={closeMenu} className="inline-flex min-w-0">
                 <BrandLogo withLink={false} size="md" showTitle />
               </Link>
-              <button
-                type="button"
-                onClick={closeMenu}
-                className="gc-side-nav-close"
-                aria-label="إغلاق القائمة"
-              >
-                <FaIcon icon="xmark" />
-              </button>
+              <div className="flex items-center gap-2">
+                <LanguageToggle />
+                <button
+                  type="button"
+                  onClick={closeMenu}
+                  className="gc-side-nav-close"
+                  aria-label={t("navCloseMenu")}
+                >
+                  <FaIcon icon="xmark" />
+                </button>
+              </div>
             </div>
 
             <nav className="flex flex-col gap-1 p-4">
               {userRole === "physician" ? (
                 <>
-                  <div className="gc-section-label mb-2 px-1">لوحة الطبيب</div>
+                  <div className="gc-section-label mb-2 px-1">{t("navPhysicianDashboard")}</div>
                   {renderSideNavLink(
-                    { href: PHYSICIAN_DASHBOARD_HOME, label: "الرئيسية" },
+                    { href: PHYSICIAN_DASHBOARD_HOME, label: t("navMyDashboard") },
                     closeMenu,
                   )}
 
-                  <div className="gc-section-label mb-2 mt-4 px-1">أقسام الحالات</div>
+                  <div className="gc-section-label mb-2 mt-4 px-1">{t("navDashboardSections")}</div>
                   {physicianSections.map((section) =>
                     renderSideNavLink(
                       {
@@ -322,7 +329,7 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
                 </>
               ) : (
                 <>
-                  <div className="gc-section-label mb-2 px-1">التنقل</div>
+                  <div className="gc-section-label mb-2 px-1">{t("navMainNav")}</div>
                   {primaryAction ? <div className="mb-2">{primaryAction}</div> : null}
                   {navItems.map((item) => renderSideNavLink(item, closeMenu))}
                 </>
@@ -338,10 +345,10 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
 
       <ConfirmModal
         open={backConfirming}
-        title="تسجيل الخروج"
-        message="العودة للصفحة الرئيسية تتطلّب تسجيل الخروج. هل تريد المتابعة؟"
-        confirmLabel="نعم، خروج"
-        cancelLabel="إلغاء"
+        title={t("navConfirmLogoutTitle")}
+        message={t("navConfirmLogoutMsg")}
+        confirmLabel={t("navConfirmLogoutBtn")}
+        cancelLabel={t("navCancelBtn")}
         onConfirm={confirmBackToHome}
         onClose={cancelBack}
       />

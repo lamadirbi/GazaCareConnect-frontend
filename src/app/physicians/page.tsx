@@ -10,6 +10,7 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { PhysicianPhotoBox } from "@/features/physician/components/PhysicianPhotoBox";
+import { useLang } from "@/lib/i18n";
 
 type VerifiedPhysician = {
   id: number;
@@ -23,6 +24,7 @@ type VerifiedPhysician = {
 type Paginated<T> = { data: T[] };
 
 export default function VerifiedPhysiciansPage() {
+  const { t } = useLang();
   const { user, loading: authLoading } = useRequireAuth({ allowedRoles: ["patient"] });
   const [rows, setRows] = useState<VerifiedPhysician[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +50,7 @@ export default function VerifiedPhysiciansPage() {
         if (!mounted) return;
         setLoading(false);
         if (!initialLoadDone) setInitialLoadDone(true);
-        setError("فشل تحميل الأطباء");
+        setError(t("physiciansLoadError"));
       });
     return () => {
       mounted = false;
@@ -58,26 +60,26 @@ export default function VerifiedPhysiciansPage() {
   return (
     <PageLoadingGate
       loading={authLoading || !initialLoadDone}
-      message="جاري تحميل الأطباء..."
+      message={t("physiciansLoading")}
     >
     <div className="min-h-screen bg-transparent">
-      <AppHeader title="الأطباء الموثّقون" backHref="/dashboard" userRole={user?.role} />
+      <AppHeader title={t("physiciansTitle")} backHref="/dashboard" userRole={user?.role} />
 
       <main className="mx-auto w-full max-w-5xl px-4 py-8">
         <Card>
           <CardBody className="p-6">
             <h1 className="text-lg font-semibold text-zinc-900">
-              الأطباء الموثّقون
+{t("physiciansTitle")}
             </h1>
             <p className="mt-1 text-sm text-zinc-600">
-              تصفّح الأطباء وأرسل استشارة لمن تختاره، أو أرسلها لأول طبيب متاح من صفحة استشارة جديدة.
+{t("physiciansDesc")}
             </p>
 
             <div className="mt-4">
               <input
                 value={specialty}
                 onChange={(e) => setSpecialty(e.target.value)}
-                placeholder="بحث بالتخصص..."
+                placeholder={t("specialtySearchPlaceholder")}
                 className="w-full rounded-xl border border-(--border) bg-(--surface) px-3 py-2 text-sm"
               />
             </div>
@@ -85,9 +87,9 @@ export default function VerifiedPhysiciansPage() {
             {error ? <Alert variant="error" className="mt-4">{error}</Alert> : null}
 
             {loading ? (
-              <p className="mt-6 text-sm text-zinc-500">جاري تحديث القائمة...</p>
+              <p className="mt-6 text-sm text-zinc-500">{t("listRefreshing")}</p>
             ) : rows.length === 0 ? (
-              <p className="mt-6 text-sm text-zinc-500">لا يوجد أطباء موثّقون حالياً.</p>
+              <p className="mt-6 text-sm text-zinc-500">{t("noVerifiedPhysicians")}</p>
             ) : (
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 {rows.map((row) => (
@@ -96,7 +98,7 @@ export default function VerifiedPhysiciansPage() {
                       <div className="flex items-start gap-4">
                         <PhysicianPhotoBox
                           fileId={row.profile_photo_file_id}
-                          alt={row.user?.name ?? "طبيب"}
+                          alt={row.user?.name ?? t("doctorDefault")}
                           size="md"
                         />
                         <div className="min-w-0 flex-1">
@@ -111,7 +113,7 @@ export default function VerifiedPhysiciansPage() {
                             <Link
                               href={`/consultations/new?physician_id=${row.user?.id ?? ""}&mode=direct`}
                             >
-                              <Button size="sm">إرسال استشارة لهذا الطبيب</Button>
+                              <Button size="sm">{t("sendConsultationToDoctor")}</Button>
                             </Link>
                           </div>
                         </div>

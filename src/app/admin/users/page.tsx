@@ -9,6 +9,7 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { formatPatientWithRelationship } from "@/lib/caregiver";
+import { useLang } from "@/lib/i18n";
 
 type UserRow = {
   id: number;
@@ -28,13 +29,8 @@ type UserRow = {
 
 type Paginated<T> = { data: T[] };
 
-const roleLabels: Record<string, string> = {
-  patient: "مراجع",
-  physician: "طبيب",
-  admin: "مدير",
-};
-
 export default function AdminUsersPage() {
+  const { t, lang } = useLang();
   const { user, loading: authLoading } = useRequireAuth({ allowedRoles: ["admin"] });
   const [rows, setRows] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +38,12 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [roleFilter, setRoleFilter] = useState("");
+
+  const roleLabels: Record<string, string> = {
+    patient: t("rolePatientShort"),
+    physician: t("rolePhysicianShort"),
+    admin: t("roleAdminShort"),
+  };
 
   async function load() {
     setLoading(true);
@@ -79,43 +81,40 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <PageLoadingGate
-      loading={authLoading || !initialLoadDone}
-      message="جاري تحميل المستخدمين..."
-    >
+    <PageLoadingGate loading={authLoading || !initialLoadDone} message={t("adminUsersLoading")}>
     <div className="min-h-screen bg-transparent">
-      <AppHeader title="إدارة المستخدمين" backHref="/admin/dashboard" userRole={user?.role} />
+      <AppHeader title={t("adminManageUsers")} backHref="/admin/dashboard" userRole={user?.role} />
 
       <main className="mx-auto w-full max-w-5xl px-4 py-8">
         <Card>
           <CardBody className="p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h1 className="text-lg font-semibold text-zinc-900">المستخدمون</h1>
+              <h1 className="text-lg font-semibold text-zinc-900">{t("navUsers")}</h1>
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
                 className="rounded-xl border border-(--border) bg-(--surface) px-3 py-2 text-sm"
               >
-                <option value="">كل الأدوار</option>
-                <option value="patient">مرضى</option>
-                <option value="physician">أطباء</option>
+                <option value="">{t("adminAllRoles")}</option>
+                <option value="patient">{t("adminPatientsFilter")}</option>
+                <option value="physician">{t("adminPhysiciansFilter")}</option>
               </select>
             </div>
 
             {error ? <Alert variant="error" className="mt-4">{error}</Alert> : null}
 
             {loading ? (
-              <p className="mt-6 text-sm text-zinc-500">جاري تحديث القائمة...</p>
+              <p className="mt-6 text-sm text-zinc-500">{t("adminUpdatingList")}</p>
             ) : (
               <div className="mt-6 overflow-x-auto">
                 <table className="min-w-full text-sm">
                   <thead>
-                    <tr className="border-b border-(--border) text-right text-zinc-500">
-                      <th className="px-3 py-2 font-medium">الاسم</th>
-                      <th className="px-3 py-2 font-medium">البريد</th>
-                      <th className="px-3 py-2 font-medium">الدور</th>
-                      <th className="px-3 py-2 font-medium">الحالة</th>
-                      <th className="px-3 py-2 font-medium">إجراء</th>
+                    <tr className="border-b border-(--border) text-start text-zinc-500">
+                      <th className="px-3 py-2 font-medium">{t("adminColName")}</th>
+                      <th className="px-3 py-2 font-medium">{t("adminColEmail")}</th>
+                      <th className="px-3 py-2 font-medium">{t("adminColRole")}</th>
+                      <th className="px-3 py-2 font-medium">{t("adminColStatus")}</th>
+                      <th className="px-3 py-2 font-medium">{t("adminColAction")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -123,25 +122,25 @@ export default function AdminUsersPage() {
                       <tr key={row.id} className="border-b border-(--border)">
                         <td className="px-3 py-3 font-medium">
                           {row.role === "patient"
-                            ? formatPatientWithRelationship(row)
+                            ? formatPatientWithRelationship(row, lang)
                             : row.name}
                         </td>
                         <td className="px-3 py-3" dir="ltr">{row.email}</td>
                         <td className="px-3 py-3">{roleLabels[row.role] ?? row.role}</td>
                         <td className="px-3 py-3">
                           {row.is_disabled ? (
-                            <span className="text-red-600">معطّل</span>
+                            <span className="text-red-600">{t("adminDisabled")}</span>
                           ) : (
-                            <span className="text-emerald-600">نشط</span>
+                            <span className="text-emerald-600">{t("adminActive")}</span>
                           )}
                           {row.role === "physician" && row.physician_profile?.verification_status ? (
                             <div className="mt-1 text-xs text-zinc-500">
-                              توثيق: {row.physician_profile.verification_status}
+                              {t("adminVerification")} {row.physician_profile.verification_status}
                             </div>
                           ) : null}
                           {row.role === "physician" && row.physician_profile?.verifier?.name ? (
                             <div className="mt-1 text-xs text-zinc-500">
-                              بواسطة: {row.physician_profile.verifier.name}
+                              {t("adminVerifiedBy")} {row.physician_profile.verifier.name}
                             </div>
                           ) : null}
                         </td>
@@ -155,7 +154,7 @@ export default function AdminUsersPage() {
                               disabled={busyId === row.id}
                               onClick={() => toggleDisabled(row)}
                             >
-                              {row.is_disabled ? "تفعيل" : "تعطيل"}
+                              {row.is_disabled ? t("adminEnable") : t("adminDisable")}
                             </Button>
                           )}
                         </td>

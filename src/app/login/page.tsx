@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { BrandLogo } from "@/components/BrandLogo";
 import { PasswordInput } from "@/components/ui/PasswordInput";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLang } from "@/lib/i18n";
 
 type LoginResponse = {
   user: { id: number; name: string; email: string; role: string };
@@ -16,6 +18,7 @@ type LoginResponse = {
 };
 
 export default function LoginPage() {
+  const { t } = useLang();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,7 +40,7 @@ export default function LoginPage() {
     setLoading(false);
     if (!res.ok) {
       if (res.status === 422) {
-        setError("بيانات الدخول غير صحيحة. تحقق من بريدك وكلمة المرور.");
+        setError(t("loginError422"));
       } else {
         setError(res.message);
       }
@@ -59,27 +62,30 @@ export default function LoginPage() {
       <main className="w-full max-w-md py-2">
         <div className="mb-4 flex items-center justify-between gap-2">
           <BrandLogo href="/" size="lg" showTitle showTagline className="min-w-0" />
-          <Link
-            href="/"
-            className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
-          >
-            الرئيسية
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <LanguageToggle />
+            <Link
+              href="/"
+              className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+            >
+              {t("backToHome")}
+            </Link>
+          </div>
         </div>
 
         <Card>
           <CardBody className="p-5 sm:p-6">
             <h1 className="text-xl font-semibold text-zinc-900">
-              مرحباً بعودتك
+              {t("loginPageTitle")}
             </h1>
             <p className="mt-1 text-sm text-zinc-600">
-              سجّل دخولك للوصول إلى لوحة التحكم.
+              {t("loginPageSubtitle")}
             </p>
 
             <form onSubmit={onSubmit} className="mt-6 grid gap-4">
               <label className="grid gap-1">
                 <span className="text-sm font-medium text-zinc-800">
-                  البريد الإلكتروني
+                  {t("emailLabel")}
                 </span>
                 <input
                   value={email}
@@ -88,21 +94,21 @@ export default function LoginPage() {
                   inputMode="email"
                   autoComplete="email"
                   required
-                  placeholder="أدخل بريدك الإلكتروني"
+                  placeholder={t("emailPlaceholder")}
                   className="h-11 rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-(--ring)"
                 />
               </label>
 
               <label className="grid gap-1">
                 <span className="text-sm font-medium text-zinc-800">
-                  كلمة المرور
+                  {t("passwordLabel")}
                 </span>
                 <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
                   required
-                  placeholder="••••••••"
+                  placeholder={t("passwordPlaceholder")}
                 />
               </label>
 
@@ -111,21 +117,21 @@ export default function LoginPage() {
                   href="/forgot-password"
                   className="text-xs font-medium text-(--gc-accent) hover:underline"
                 >
-                  نسيت كلمة المرور؟
+                  {t("forgotPassword")}
                 </Link>
               </div>
 
               {error ? <Alert variant="error">{error}</Alert> : null}
 
               <Button type="submit" disabled={loading} className="w-full">
-                {loading ? "جاري الدخول..." : "دخول"}
+                {loading ? t("loginLoading") : t("loginBtn")}
               </Button>
             </form>
 
             <div className="mt-5 text-center text-sm text-zinc-600">
-              ليس لديك حساب؟{" "}
+              {t("noAccount")}{" "}
               <Link className="font-medium text-zinc-900" href="/register">
-                إنشاء حساب جديد
+                {t("registerLink")}
               </Link>
             </div>
           </CardBody>

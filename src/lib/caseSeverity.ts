@@ -1,14 +1,15 @@
+import { getCaseSeverityLabel, type Lang } from "@/lib/i18n";
+
 export const CASE_SEVERITIES = [
-  { value: "mild", label: "بسيطة" },
-  { value: "moderate", label: "متوسطة" },
-  { value: "critical", label: "حرجة" },
+  { value: "mild" },
+  { value: "moderate" },
+  { value: "critical" },
 ] as const;
 
 export type CaseSeverity = (typeof CASE_SEVERITIES)[number]["value"];
 
-export function caseSeverityLabel(value: string | null | undefined): string | null {
-  if (!value) return null;
-  return CASE_SEVERITIES.find((s) => s.value === value)?.label ?? null;
+export function caseSeverityLabel(value: string | null | undefined, lang: Lang = "ar"): string | null {
+  return getCaseSeverityLabel(lang, value);
 }
 
 export function caseSeverityBadgeClass(value: string | null | undefined): string {

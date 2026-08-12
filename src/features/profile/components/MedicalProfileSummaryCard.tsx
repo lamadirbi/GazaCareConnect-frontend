@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { genderLabel } from "@/lib/medicalProfile";
 import { AgeValue } from "@/components/AgeValue";
+import { useLang } from "@/lib/i18n";
 
 export type MedicalProfileSummary = {
   gender?: string | null;
@@ -26,9 +27,9 @@ type Props = {
   embedded?: boolean;
 };
 
-function fieldOrDash(value: string | null | undefined) {
+function fieldOrDash(value: string | null | undefined, fallback: string) {
   const v = value?.trim();
-  return v ? v : "غير محدد";
+  return v ? v : fallback;
 }
 
 function ProfileField({
@@ -49,55 +50,75 @@ function ProfileField({
 }
 
 export function MedicalProfileSummaryCard({
-  title = "ملفك الطبي",
-  subtitle = "يُرفق تلقائياً مع كل استشارة.",
+  title,
+  subtitle,
   profile,
   editHref,
   embedded = false,
 }: Props) {
+  const { t, lang } = useLang();
+  const resolvedTitle = title ?? t("profileSummaryTitle");
+  const resolvedSubtitle = subtitle ?? t("profileSummarySubtitle");
+  const notSpecified = t("notSpecified");
+
   const fields = (
     <div className="grid gap-2.5 sm:grid-cols-2">
-      <ProfileField label="الجنس" value={genderLabel(profile.gender)} />
+      <ProfileField label={t("genderLabel")} value={genderLabel(profile.gender, lang)} />
+      <ProfileField label={t("ageLabel")} value={<AgeValue age={profile.age} />} />
       <ProfileField
-        label="العمر"
-        value={<AgeValue age={profile.age} />}
-      />
-      <ProfileField
-        label="الطول"
+        label={t("heightLabel")}
         value={
-          profile.height_cm != null ? <span dir="ltr">{profile.height_cm} cm</span> : "غير محدد"
+          profile.height_cm != null ? (
+            <span dir="ltr">{profile.height_cm} cm</span>
+          ) : (
+            notSpecified
+          )
         }
       />
       <ProfileField
-        label="الوزن"
+        label={t("weightLabel")}
         value={
-          profile.weight_kg != null ? <span dir="ltr">{profile.weight_kg} kg</span> : "غير محدد"
+          profile.weight_kg != null ? (
+            <span dir="ltr">{profile.weight_kg} kg</span>
+          ) : (
+            notSpecified
+          )
         }
       />
       <ProfileField
-        label="أمراض مزمنة"
+        label={t("chronicDiseasesLabel")}
         wide
-        value={<span className="whitespace-pre-wrap">{fieldOrDash(profile.chronic_diseases)}</span>}
+        value={
+          <span className="whitespace-pre-wrap">
+            {fieldOrDash(profile.chronic_diseases, notSpecified)}
+          </span>
+        }
       />
       {"medical_history" in profile ? (
         <ProfileField
-          label="التاريخ الطبي"
+          label={t("medicalHistoryLabel")}
           wide
           value={
-            <span className="whitespace-pre-wrap">{fieldOrDash(profile.medical_history)}</span>
+            <span className="whitespace-pre-wrap">
+              {fieldOrDash(profile.medical_history, notSpecified)}
+            </span>
           }
         />
       ) : null}
       <ProfileField
-        label="الحساسية"
-        wide
-        value={<span className="whitespace-pre-wrap">{fieldOrDash(profile.allergies)}</span>}
-      />
-      <ProfileField
-        label="الأدوية الحالية"
+        label={t("allergiesLabel")}
         wide
         value={
-          <span className="whitespace-pre-wrap">{fieldOrDash(profile.current_medications)}</span>
+          <span className="whitespace-pre-wrap">{fieldOrDash(profile.allergies, notSpecified)}</span>
+        }
+      />
+      <ProfileField
+        label={t("medicationsLabel")}
+        wide
+        value={
+          <span className="whitespace-pre-wrap">
+            {fieldOrDash(profile.current_medications, notSpecified)}
+          </span>
         }
       />
     </div>
@@ -110,7 +131,7 @@ export function MedicalProfileSummaryCard({
           <div className="mb-3 flex justify-end">
             <Link href={editHref}>
               <Button variant="secondary" size="sm" type="button">
-                تعديل الملف
+                {t("editProfile")}
               </Button>
             </Link>
           </div>
@@ -124,13 +145,15 @@ export function MedicalProfileSummaryCard({
     <>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold text-foreground">{title}</div>
-          {subtitle ? <p className="mt-1 text-xs text-(--muted)">{subtitle}</p> : null}
+          <div className="text-sm font-semibold text-foreground">{resolvedTitle}</div>
+          {resolvedSubtitle ? (
+            <p className="mt-1 text-xs text-(--muted)">{resolvedSubtitle}</p>
+          ) : null}
         </div>
         {editHref ? (
           <Link href={editHref}>
             <Button variant="secondary" size="sm" type="button">
-              تعديل الملف
+              {t("editProfile")}
             </Button>
           </Link>
         ) : null}

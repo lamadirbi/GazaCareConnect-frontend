@@ -1,5 +1,7 @@
 "use client";
 
+import { useLang } from "@/lib/i18n";
+
 type Props = {
   page: number;
   totalPages: number;
@@ -15,17 +17,20 @@ export function ListPagination({
   total,
   pageSize,
   onPageChange,
-  label = "استشارة",
+  label,
 }: Props) {
+  const { t } = useLang();
+  const itemLabel = label ?? t("paginationItemConsultation");
+
   if (total <= pageSize) return null;
 
   const from = (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, total);
 
   return (
-    <div className="gc-list-pagination" role="navigation" aria-label="تنقل الصفحات">
+    <div className="gc-list-pagination" role="navigation" aria-label={t("paginationNavLabel")}>
       <p className="gc-list-pagination-meta">
-        {from}–{to} من {total} {label}
+        {from}–{to} {t("paginationOf")} {total} {itemLabel}
       </p>
       <div className="gc-list-pagination-actions">
         <button
@@ -34,7 +39,7 @@ export function ListPagination({
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
         >
-          السابق
+          {t("paginationPrev")}
         </button>
         <span className="gc-list-pagination-page">
           {page} / {totalPages}
@@ -45,7 +50,7 @@ export function ListPagination({
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
         >
-          التالي
+          {t("paginationNext")}
         </button>
       </div>
     </div>

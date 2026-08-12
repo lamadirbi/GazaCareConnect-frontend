@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { downloadWithAuth } from "@/lib/api";
 import type { CertificateFileRef, PhysicianProfileData } from "@/features/consultations/types";
+import { useLang } from "@/lib/i18n";
 
 type Props = {
   open: boolean;
@@ -23,6 +24,7 @@ function certificateFilesFromProfile(prof: PhysicianProfileData | null): Certifi
 type PreviewRow = { fileId: number; url: string; mime: string; name: string };
 
 export function PhysicianInfoModal({ open, onClose, consultationId, physicianName, profile }: Props) {
+  const { t } = useLang();
   const certFiles = useMemo(() => certificateFilesFromProfile(profile), [profile]);
   const certKey = useMemo(() => certFiles.map((f) => f.id).join(","), [certFiles]);
 
@@ -70,7 +72,7 @@ export function PhysicianInfoModal({ open, onClose, consultationId, physicianNam
         if (cancelled) break;
         if (!res.ok) {
           setLoading(false);
-          setErr(res.message || "تعذر تحميل بعض مرفقات الشهادة");
+          setErr(res.message || t("certLoadError"));
           return;
         }
         const mime =
@@ -93,7 +95,7 @@ export function PhysicianInfoModal({ open, onClose, consultationId, physicianNam
     return () => {
       cancelled = true;
     };
-  }, [open, consultationId, certKey]);
+  }, [open, consultationId, certKey, t]);
 
   if (!open) return null;
 
@@ -114,17 +116,14 @@ export function PhysicianInfoModal({ open, onClose, consultationId, physicianNam
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-(--border) px-4 py-3">
-          <h2
-            id="physician-modal-title"
-            className="text-sm font-semibold text-zinc-900"
-          >
-            معلومات الطبيب — {physicianName}
+          <h2 id="physician-modal-title" className="text-sm font-semibold text-zinc-900">
+            {t("physicianInfoTitle")} {physicianName}
           </h2>
           <button
             type="button"
             onClick={close}
             className="rounded-lg p-1.5 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800"
-            aria-label="إغلاق"
+            aria-label={t("close")}
           >
             ×
           </button>
@@ -133,25 +132,28 @@ export function PhysicianInfoModal({ open, onClose, consultationId, physicianNam
         <div className="min-h-0 overflow-y-auto p-4 text-sm text-zinc-800">
           {profile?.specialty?.trim() ? (
             <div>
-              <span className="font-semibold text-zinc-900">التخصص:</span>{" "}
+              <span className="font-semibold text-zinc-900">{t("specialtyColon")}</span>{" "}
               {profile.specialty}
             </div>
           ) : (
-            <div className="text-zinc-500">لا يوجد تخصص مسجّل.</div>
+            <div className="text-zinc-500">{t("noSpecialty")}</div>
           )}
 
           {profile?.certificate?.trim() ? (
             <div className="mt-3 whitespace-pre-wrap">
-              <span className="font-semibold text-zinc-900">الشهادة / المؤهل:</span>{" "}
+              <span className="font-semibold text-zinc-900">{t("certificateColon")}</span>{" "}
               {profile.certificate}
             </div>
           ) : null}
 
           <div className="mt-4 border-t border-(--border) pt-4">
             <div className="text-xs font-semibold text-zinc-600">
-              مرفقات الشهادة{certCount > 1 ? ` (${certCount})` : ""}
+              {t("certAttachmentsSection")}
+              {certCount > 1 ? ` (${certCount})` : ""}
             </div>
-            {loading ? <div className="mt-2 text-xs text-zinc-500">جاري تحميل المعاينات...</div> : null}
+            {loading ? (
+              <div className="mt-2 text-xs text-zinc-500">{t("loadingPreviews")}</div>
+            ) : null}
             {err ? <div className="mt-2 text-xs text-red-600">{err}</div> : null}
 
             {!loading && !err && previews.length > 0 ? (
@@ -167,7 +169,7 @@ export function PhysicianInfoModal({ open, onClose, consultationId, physicianNam
                       />
                     ) : row.mime === "application/pdf" || row.mime.includes("pdf") ? (
                       <iframe
-                        title="معاينة الشهادة"
+                        title={t("certPreviewTitle")}
                         src={row.url}
                         className="h-72 w-full rounded-xl border border-(--border) bg-white"
                       />
@@ -177,7 +179,7 @@ export function PhysicianInfoModal({ open, onClose, consultationId, physicianNam
                         download={row.name}
                         className="inline-flex text-xs font-medium text-emerald-700 underline"
                       >
-                        تنزيل — {row.name}
+                        {t("downloadPrefix")} {row.name}
                       </a>
                     )}
                   </div>
@@ -186,9 +188,7 @@ export function PhysicianInfoModal({ open, onClose, consultationId, physicianNam
             ) : null}
 
             {certCount === 0 && !loading ? (
-              <div className="mt-2 text-xs text-zinc-500">
-                لا يوجد مرفق مسجّل لهذه الشهادة.
-              </div>
+              <div className="mt-2 text-xs text-zinc-500">{t("noCertFile")}</div>
             ) : null}
           </div>
         </div>
@@ -196,4 +196,3 @@ export function PhysicianInfoModal({ open, onClose, consultationId, physicianNam
     </div>
   );
 }
-

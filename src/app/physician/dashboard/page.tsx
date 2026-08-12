@@ -14,6 +14,7 @@ import {
   PhysicianCompletedSection,
   scrollToPhysicianSection,
 } from "@/features/physician";
+import { useLang } from "@/lib/i18n";
 
 type Consultation = {
   id: number;
@@ -29,6 +30,7 @@ type Consultation = {
 type Paginated<T> = { data: T[] };
 
 export default function PhysicianDashboardPage() {
+  const { t } = useLang();
   const { user, loading: authLoading } = useRequireAuth({ allowedRoles: ["physician"] });
   const profile = physicianProfileOf(user);
   const verified = isVerifiedPhysician(user);
@@ -79,7 +81,7 @@ export default function PhysicianDashboardPage() {
       .catch(() => {
         if (!mounted) return;
         setLoading(false);
-        setError("فشل تحميل الحالات");
+        setError(t("physicianLoadError"));
       });
     return () => {
       mounted = false;
@@ -111,11 +113,11 @@ export default function PhysicianDashboardPage() {
   return (
     <PageLoadingGate
       loading={authLoading || loading}
-      message="جاري تحميل لوحة الطبيب..."
+      message={t("physicianDashboardLoading")}
     >
     <div className="min-h-screen bg-transparent">
       <AppHeader
-        title="لوحة الطبيب"
+        title={t("physicianDashboardTitle")}
         backHref="/"
         userRole={user?.role}
       />

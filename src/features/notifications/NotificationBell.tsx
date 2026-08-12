@@ -5,13 +5,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   fetchNotifications,
   formatNotificationTime,
+  localizedNotification,
   markAllNotificationsRead,
   markNotificationRead,
   type AppNotification,
 } from "@/lib/notifications";
 import { FaIcon } from "@/components/FaIcon";
+import { useLang } from "@/lib/i18n";
 
 export function NotificationBell() {
+  const { t, lang } = useLang();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -94,9 +97,9 @@ export function NotificationBell() {
           if (!open) refresh();
         }}
         className="gc-notif-bell-btn"
-        aria-label="الإشعارات"
+        aria-label={t("notifications")}
         aria-expanded={open}
-        title="الإشعارات"
+        title={t("notifications")}
       >
         <FaIcon icon="bell" className="text-base" />
         {unreadCount > 0 ? (
@@ -107,38 +110,41 @@ export function NotificationBell() {
       </button>
 
       {open ? (
-        <div className="gc-notif-panel" role="dialog" aria-label="قائمة الإشعارات">
+        <div className="gc-notif-panel" role="dialog" aria-label={t("notificationsList")}>
           <div className="gc-notif-panel-head">
-            <span className="text-sm font-semibold text-foreground">الإشعارات</span>
+            <span className="text-sm font-semibold text-foreground">{t("notifications")}</span>
             {unreadCount > 0 ? (
               <button type="button" onClick={handleMarkAll} className="gc-notif-mark-all">
-                تعليم الكل كمقروء
+                {t("markAllRead")}
               </button>
             ) : null}
           </div>
 
           <div className="gc-notif-panel-body">
             {loading && items.length === 0 ? (
-              <p className="px-4 py-6 text-center text-xs text-(--muted)">جاري التحميل...</p>
+              <p className="px-4 py-6 text-center text-xs text-(--muted)">{t("loading")}</p>
             ) : items.length === 0 ? (
-              <p className="px-4 py-6 text-center text-xs text-(--muted)">لا توجد إشعارات.</p>
+              <p className="px-4 py-6 text-center text-xs text-(--muted)">{t("noNotifications")}</p>
             ) : (
               <ul className="divide-y divide-(--border)">
-                {items.map((n) => (
+                {items.map((n) => {
+                  const text = localizedNotification(n, lang);
+                  return (
                   <li key={n.id}>
                     <Link
                       href={n.href || "/"}
                       onClick={() => handleItemClick(n)}
                       className={`gc-notif-item ${n.read_at ? "gc-notif-item-read" : ""}`}
                     >
-                      <div className="font-medium text-foreground">{n.title}</div>
-                      <div className="mt-0.5 text-xs leading-5 text-(--muted)">{n.body}</div>
+                      <div className="font-medium text-foreground">{text.title}</div>
+                      <div className="mt-0.5 text-xs leading-5 text-(--muted)">{text.body}</div>
                       <div className="mt-1 text-[10px] text-(--muted)" dir="ltr">
-                        {formatNotificationTime(n.created_at)}
+                        {formatNotificationTime(n.created_at, lang)}
                       </div>
                     </Link>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             )}
           </div>

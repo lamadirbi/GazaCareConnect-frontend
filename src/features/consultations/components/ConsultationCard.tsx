@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { ConsultationStatusBadge } from "./ConsultationStatusBadge";
-import { QUEUE_ASSIGNMENT_LABEL_SHORT } from "../assignmentLabels";
+import { useLang } from "@/lib/i18n";
 
 type Props = {
   id: number;
@@ -20,8 +20,8 @@ type Props = {
   assignmentMode?: "queue" | "direct" | null;
 };
 
-function formatSubmittedAt(submittedAt: string) {
-  return new Date(submittedAt).toLocaleDateString("ar", {
+function formatSubmittedAt(submittedAt: string, locale: string) {
+  return new Date(submittedAt).toLocaleDateString(locale === "ar" ? "ar" : "en", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -42,7 +42,8 @@ export function ConsultationCard({
   assignmentMode,
   physicianId,
 }: Props) {
-  const dateStr = formatSubmittedAt(submittedAt);
+  const { t, lang } = useLang();
+  const dateStr = formatSubmittedAt(submittedAt, lang);
   const waiting = status === "pending" && !physicianResponse?.trim();
   const inReview = status === "pending" && Boolean(physicianResponse?.trim());
   const hasResponse = Boolean(physicianResponse?.trim());
@@ -57,11 +58,11 @@ export function ConsultationCard({
 
   const statusHint =
     variant === "patient" && waiting
-      ? "بانتظار رد الطبيب"
+      ? t("consultWaitingPatient")
       : variant === "patient" && inReview
-        ? "الطبيب يراجع حالتك"
+        ? t("consultInReviewPatient")
         : variant === "physician" && waiting
-          ? "بانتظار ردك"
+          ? t("consultWaitingPhysician")
           : null;
 
   function assignmentTag() {
@@ -70,20 +71,20 @@ export function ConsultationCard({
     if (variant === "physician") {
       if (assignmentMode === "direct") {
         return (
-          <span className="gc-consult-card-tag gc-consult-card-tag-direct">موجّهة إليك</span>
+          <span className="gc-consult-card-tag gc-consult-card-tag-direct">{t("consultTagDirectToYou")}</span>
         );
       }
-      return <span className="gc-consult-card-tag gc-consult-card-tag-claimed">مستلَمة</span>;
+      return <span className="gc-consult-card-tag gc-consult-card-tag-claimed">{t("consultTagClaimed")}</span>;
     }
 
     if (assignmentMode === "direct") {
       return (
-        <span className="gc-consult-card-tag gc-consult-card-tag-direct">طبيب محدّد</span>
+        <span className="gc-consult-card-tag gc-consult-card-tag-direct">{t("consultTagDirect")}</span>
       );
     }
 
     if (status === "completed") {
-      return <span className="gc-consult-card-tag">إرسال عام</span>;
+      return <span className="gc-consult-card-tag">{t("consultTagGeneral")}</span>;
     }
 
     if (claimedByPhysician) {
@@ -91,7 +92,7 @@ export function ConsultationCard({
     }
 
     if (waiting) {
-      return <span className="gc-consult-card-tag">{QUEUE_ASSIGNMENT_LABEL_SHORT}</span>;
+      return <span className="gc-consult-card-tag">{t("queueAssignmentShort")}</span>;
     }
 
     return null;
@@ -110,23 +111,23 @@ export function ConsultationCard({
           </div>
 
           <time className="gc-consult-card-date" dateTime={submittedAt}>
-            أُرسلت {dateStr}
+            {t("consultSubmitted")} {dateStr}
           </time>
         </div>
 
         {variant === "physician" && patientName ? (
           <div className="gc-consult-card-patient mt-3">
             <span className="gc-consult-card-patient-icon" aria-hidden>
-              ر
+              {lang === "ar" ? "ر" : "P"}
             </span>
             <span>
-              المراجع: <strong>{patientName}</strong>
+              {t("consultPatient")} <strong>{patientName}</strong>
             </span>
           </div>
         ) : null}
 
         <div className="mt-4">
-          <div className="gc-section-label mb-2">نص الاستشارة</div>
+          <div className="gc-section-label mb-2">{t("consultQuestion")}</div>
           <div className="gc-consult-card-question">
             <p className="line-clamp-3 whitespace-pre-wrap">{questionText}</p>
           </div>
@@ -135,7 +136,7 @@ export function ConsultationCard({
         {variant === "patient" && hasResponse ? (
           <div className="gc-consult-card-response mt-4">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold">
-              <span>توصيات الطبيب</span>
+              <span>{t("consultDoctorReply")}</span>
               {physicianName?.trim() ? (
                 <>
                   <span className="font-normal opacity-60">—</span>
@@ -159,7 +160,7 @@ export function ConsultationCard({
           <Link href={href} className="gc-consult-card-cta">
             {ctaLabel}
             <span aria-hidden className="gc-consult-card-cta-arrow">
-              ←
+              {lang === "ar" ? "←" : "→"}
             </span>
           </Link>
         </div>

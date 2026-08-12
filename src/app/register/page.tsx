@@ -14,22 +14,20 @@ import { LocalFilePicker } from "@/components/ui/LocalFilePicker";
 import { ImageCropModal } from "@/components/ui/ImageCropModal";
 import { PhysicianPhotoBox } from "@/features/physician/components/PhysicianPhotoBox";
 import { SelectedLocalFilesList } from "@/features/consultations";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLang } from "@/lib/i18n";
 
 type RegisterResponse = {
   user: { id: number; name: string; email: string; role: string };
   token: string;
 };
 
-const roles = [
-  { value: "patient", label: "مراجع" },
-  { value: "physician", label: "طبيب" },
-] as const;
-
 export default function RegisterPage() {
+  const { t } = useLang();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [role, setRole] = useState<(typeof roles)[number]["value"]>("patient");
+  const [role, setRole] = useState<"patient" | "physician">("patient");
   const [password, setPassword] = useState("");
   const [physicianSpecialty, setPhysicianSpecialty] = useState("");
   const [physicianCertificate, setPhysicianCertificate] = useState("");
@@ -46,9 +44,9 @@ export default function RegisterPage() {
 
   const passwordHint = useMemo(() => {
     if (!password) return null;
-    if (password.length < 8) return "كلمة المرور يجب أن تكون 8 أحرف على الأقل.";
+    if (password.length < 8) return t("passwordTooShort");
     return null;
-  }, [password]);
+  }, [password, t]);
 
   const canSubmitPhysician = useMemo(() => {
     if (!isPhysician) return true;
@@ -68,13 +66,13 @@ export default function RegisterPage() {
 
     if (isPhysician && !profilePhotoFile) {
       setLoading(false);
-      setError("يرجى إرفاق صورتك الشخصية كإثبات هوية.");
+      setError(t("photoRequired"));
       return;
     }
 
     if (isPhysician && certificateFiles.length === 0) {
       setLoading(false);
-      setError("يرجى إرفاق شهادة واحدة على الأقل (PDF أو صورة) لمراجعة الإدارة.");
+      setError(t("certRequired"));
       return;
     }
 
@@ -143,6 +141,11 @@ export default function RegisterPage() {
     window.location.href = routeForRole(res.data.user.role);
   }
 
+  const roles = [
+    { value: "patient" as const, label: t("rolePatient") },
+    { value: "physician" as const, label: t("rolePhysician") },
+  ];
+
   return (
     <div className="relative flex flex-1 items-center justify-center bg-zinc-50 px-4 py-10">
       <div className="absolute inset-0 -z-10">
@@ -150,271 +153,251 @@ export default function RegisterPage() {
         <div className="absolute -top-12 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-200/40 blur-3xl" />
       </div>
       <main className="w-full max-w-md">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between gap-2">
           <BrandLogo href="/" size="xl" showTitle showTagline />
-          <Link
-            href="/"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
-          >
-            الصفحة الرئيسية
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <LanguageToggle />
+            <Link
+              href="/"
+              className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+            >
+              {t("backToHome")}
+            </Link>
+          </div>
         </div>
 
         <Card>
           <CardBody>
             <h1 className="text-xl font-semibold text-zinc-900">
-              انضم إلى GazaCare Connect
+              {t("registerPageTitle")}
             </h1>
             <p className="mt-1 text-sm text-zinc-600">
-              أنشئ حسابك للوصول إلى الاستشارات والملف الطبي.
-              {isPhysician ? " حساب الطبيب يخضع لمراجعة الإدارة قبل استقبال الحالات." : ""}
+              {t("registerPageSubtitle")}
             </p>
 
             <form onSubmit={onSubmit} className="mt-6 grid gap-4">
-            <label className="grid gap-1">
-              <span className="text-sm font-medium text-zinc-800">
-                الاسم
-              </span>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
-              />
-            </label>
+              <label className="grid gap-1">
+                <span className="text-sm font-medium text-zinc-800">{t("nameLabel")}</span>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  placeholder={t("namePlaceholder")}
+                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
+                />
+              </label>
 
-            <label className="grid gap-1">
-              <span className="text-sm font-medium text-zinc-800">
-                البريد الإلكتروني
-              </span>
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
-                required
-                className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
-              />
-            </label>
+              <label className="grid gap-1">
+                <span className="text-sm font-medium text-zinc-800">{t("emailLabel")}</span>
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  type="email"
+                  required
+                  placeholder={t("emailPlaceholder")}
+                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
+                />
+              </label>
 
-            <label className="grid gap-1">
-              <span className="text-sm font-medium text-zinc-800">
-                رقم الجوال (اختياري)
-              </span>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                inputMode="tel"
-                className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
-              />
-            </label>
+              <label className="grid gap-1">
+                <span className="text-sm font-medium text-zinc-800">{t("phoneLabel")}</span>
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  inputMode="tel"
+                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
+                />
+              </label>
 
-            <label className="grid gap-1">
-              <span className="text-sm font-medium text-zinc-800">
-                نوع الحساب
-              </span>
-              <select
-                value={role}
-                onChange={(e) => {
-                  const next = e.target.value as any;
-                  setRole(next);
-                  if (next !== "physician") {
-                    setPhysicianSpecialty("");
-                    setPhysicianCertificate("");
-                    setCertificateFiles([]);
-                    setProfilePhotoFile(null);
-                    if (profilePhotoPreview) URL.revokeObjectURL(profilePhotoPreview);
-                    setProfilePhotoPreview(null);
-                  }
-                }}
-                className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
-              >
-                {roles.map((r) => (
-                  <option key={r.value} value={r.value}>
-                    {r.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <label className="grid gap-1">
+                <span className="text-sm font-medium text-zinc-800">{t("roleLabel")}</span>
+                <select
+                  value={role}
+                  onChange={(e) => {
+                    const next = e.target.value as "patient" | "physician";
+                    setRole(next);
+                    if (next !== "physician") {
+                      setPhysicianSpecialty("");
+                      setPhysicianCertificate("");
+                      setCertificateFiles([]);
+                      setProfilePhotoFile(null);
+                      if (profilePhotoPreview) URL.revokeObjectURL(profilePhotoPreview);
+                      setProfilePhotoPreview(null);
+                    }
+                  }}
+                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
+                >
+                  {roles.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            {isPhysician ? (
-              <>
-                <div className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-xs text-teal-900">
-                  أدخل تخصصك ومؤهلك، ثم أرفق صورتك الشخصية كإثبات هوية وشهاداتك (PDF أو صورة). ستُراجعها الإدارة قبل تفعيل حسابك.
-                </div>
+              {isPhysician ? (
+                <>
+                  <div className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-xs text-teal-900">
+                    {t("physicianInfoNotice")}
+                  </div>
 
-                <div className="rounded-2xl border border-(--border) bg-(--surface-2) p-4">
-                  <div className="text-sm font-medium text-zinc-800">الصورة الشخصية (إلزامية)</div>
-                  <p className="mt-1 text-xs text-zinc-500">
-                    صورة واضحة لوجهك — تُستخدم كإثبات هوية عند مراجعة طلب التوثيق.
-                  </p>
-                  <div className="mt-3 flex flex-wrap items-center gap-4">
-                    <PhysicianPhotoBox
-                      previewUrl={profilePhotoPreview}
-                      alt="صورة الطبيب"
-                      size="lg"
-                    />
-                    <div className="flex flex-wrap gap-2">
-                      <LocalFilePicker
-                        accept="image/*"
-                        multiple={false}
-                        buttonLabel={profilePhotoFile ? "تغيير الصورة" : "اختيار الصورة"}
-                        hint="صورة وجه واضحة (JPG أو PNG)"
-                        onPick={(picked) => {
-                          const file = picked[0];
-                          if (!file) return;
-                          if (!file.type.startsWith("image/")) {
-                            setError("يُرجى اختيار صورة فقط للصورة الشخصية.");
-                            return;
-                          }
-                          setError(null);
-                          setCropFile(file);
-                          setCropOpen(true);
-                        }}
+                  <div className="rounded-2xl border border-(--border) bg-(--surface-2) p-4">
+                    <div className="text-sm font-medium text-zinc-800">{t("profilePhotoTitle")}</div>
+                    <p className="mt-1 text-xs text-zinc-500">{t("profilePhotoDesc")}</p>
+                    <div className="mt-3 flex flex-wrap items-center gap-4">
+                      <PhysicianPhotoBox
+                        previewUrl={profilePhotoPreview}
+                        alt={t("profilePhotoTitle")}
+                        size="lg"
                       />
-                      {profilePhotoFile ? (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setProfilePhotoFile(null);
-                            if (profilePhotoPreview) URL.revokeObjectURL(profilePhotoPreview);
-                            setProfilePhotoPreview(null);
+                      <div className="flex flex-wrap gap-2">
+                        <LocalFilePicker
+                          accept="image/*"
+                          multiple={false}
+                          buttonLabel={profilePhotoFile ? t("changePhoto") : t("choosePhoto")}
+                          hint={t("photoHint")}
+                          onPick={(picked) => {
+                            const file = picked[0];
+                            if (!file) return;
+                            if (!file.type.startsWith("image/")) {
+                              setError(t("photoOnlyImageError"));
+                              return;
+                            }
+                            setError(null);
+                            setCropFile(file);
+                            setCropOpen(true);
                           }}
-                        >
-                          إزالة
-                        </Button>
-                      ) : null}
+                        />
+                        {profilePhotoFile ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setProfilePhotoFile(null);
+                              if (profilePhotoPreview) URL.revokeObjectURL(profilePhotoPreview);
+                              setProfilePhotoPreview(null);
+                            }}
+                          >
+                            {t("removePhoto")}
+                          </Button>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <label className="grid gap-1">
-                  <span className="text-sm font-medium text-zinc-800">
-                    التخصص
-                  </span>
-                  <input
-                    value={physicianSpecialty}
-                    onChange={(e) => setPhysicianSpecialty(e.target.value)}
-                    required={isPhysician}
-                    placeholder="مثال: طب الأطفال، جراحة عامة، قلب..."
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
-                  />
-                </label>
+                  <label className="grid gap-1">
+                    <span className="text-sm font-medium text-zinc-800">{t("specialtyLabel")}</span>
+                    <input
+                      value={physicianSpecialty}
+                      onChange={(e) => setPhysicianSpecialty(e.target.value)}
+                      required={isPhysician}
+                      placeholder={t("specialtyPlaceholder")}
+                      className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
+                    />
+                  </label>
 
-                <label className="grid gap-1">
-                  <span className="text-sm font-medium text-zinc-800">
-                    الشهادة / المؤهل
-                  </span>
-                  <textarea
-                    value={physicianCertificate}
-                    onChange={(e) => setPhysicianCertificate(e.target.value)}
-                    required={isPhysician}
-                    rows={3}
-                    placeholder="مثال: بكالوريوس طب وجراحة، بورد/زمالة، جامعة..."
-                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
-                  />
-                  <span className="text-xs text-zinc-500">
-                    اكتبها بشكل مختصر وواضح (الحد الأقصى 5000 حرف).
-                  </span>
-                </label>
-                <div className="grid gap-1">
-                  <span className="text-sm font-medium text-zinc-800">
-                    مرفقات الشهادة
-                  </span>
-                  <LocalFilePicker
-                    accept=".pdf,image/*"
-                    multiple
-                    buttonLabel="اختيار ملفات الشهادة"
-                    hint="أرفق شهادة التخرج أو البورد (PDF أو صورة). يمكنك اختيار أكثر من ملف."
-                    onPick={(picked) => {
-                      if (picked.length) {
-                        setCertificateFiles((prev) => [...prev, ...picked]);
-                      }
-                    }}
-                  />
-                </div>
+                  <label className="grid gap-1">
+                    <span className="text-sm font-medium text-zinc-800">{t("certificateLabel")}</span>
+                    <textarea
+                      value={physicianCertificate}
+                      onChange={(e) => setPhysicianCertificate(e.target.value)}
+                      required={isPhysician}
+                      rows={3}
+                      placeholder={t("certificatePlaceholder")}
+                      className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
+                    />
+                    <span className="text-xs text-zinc-500">{t("certificateHint")}</span>
+                  </label>
 
-                {certificateFiles.length > 0 ? (
-                  <Card className="min-w-0 overflow-hidden bg-white">
-                    <CardBody className="min-w-0 p-4 text-sm">
-                      <div className="mb-2 text-sm font-semibold text-zinc-900">
-                        الملفات المختارة ({certificateFiles.length})
-                      </div>
-                      <SelectedLocalFilesList
-                        files={certificateFiles}
-                        onRemoveAt={(idx) =>
-                          setCertificateFiles((prev) => prev.filter((_, i) => i !== idx))
+                  <div className="grid gap-1">
+                    <span className="text-sm font-medium text-zinc-800">{t("certFilesLabel")}</span>
+                    <LocalFilePicker
+                      accept=".pdf,image/*"
+                      multiple
+                      buttonLabel={t("certFilesBtn")}
+                      hint={t("certFilesHint")}
+                      onPick={(picked) => {
+                        if (picked.length) {
+                          setCertificateFiles((prev) => [...prev, ...picked]);
                         }
-                      />
-                    </CardBody>
-                  </Card>
-                ) : null}
-              </>
-            ) : null}
+                      }}
+                    />
+                  </div>
 
-            <label className="grid gap-1">
-              <span className="text-sm font-medium text-zinc-800">
-                كلمة المرور
-              </span>
-              <PasswordInput
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="border-zinc-200 bg-white focus:ring-zinc-900/10"
-              />
-              {passwordHint ? (
-                <span className="text-xs text-zinc-500">
-                  {passwordHint}
-                </span>
+                  {certificateFiles.length > 0 ? (
+                    <Card className="min-w-0 overflow-hidden bg-white">
+                      <CardBody className="min-w-0 p-4 text-sm">
+                        <div className="mb-2 text-sm font-semibold text-zinc-900">
+                          {t("selectedFiles")} ({certificateFiles.length})
+                        </div>
+                        <SelectedLocalFilesList
+                          files={certificateFiles}
+                          onRemoveAt={(idx) =>
+                            setCertificateFiles((prev) => prev.filter((_, i) => i !== idx))
+                          }
+                        />
+                      </CardBody>
+                    </Card>
+                  ) : null}
+                </>
               ) : null}
-            </label>
 
-            {error ? (
-              <Alert variant="error">{error}</Alert>
-            ) : null}
+              <label className="grid gap-1">
+                <span className="text-sm font-medium text-zinc-800">{t("passwordLabel")}</span>
+                <PasswordInput
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="border-zinc-200 bg-white focus:ring-zinc-900/10"
+                />
+                {passwordHint ? (
+                  <span className="text-xs text-zinc-500">{passwordHint}</span>
+                ) : null}
+              </label>
 
-            <Button
-              type="submit"
-              disabled={loading || uploading || (isPhysician && !canSubmitPhysician)}
-              className="w-full"
-            >
-              {uploading
-                ? "جاري رفع الملفات..."
-                : loading
-                  ? "جاري إنشاء الحساب..."
-                  : "إنشاء حساب"}
-            </Button>
-          </form>
+              {error ? <Alert variant="error">{error}</Alert> : null}
 
-          <ImageCropModal
-            open={cropOpen}
-            file={cropFile}
-            title="قص الصورة الشخصية"
-            onClose={() => {
-              setCropOpen(false);
-              setCropFile(null);
-            }}
-            onConfirm={(cropped) => {
-              setCropOpen(false);
-              setCropFile(null);
-              setProfilePhotoFile(cropped);
-              if (profilePhotoPreview) URL.revokeObjectURL(profilePhotoPreview);
-              setProfilePhotoPreview(URL.createObjectURL(cropped));
-              setError(null);
-            }}
-          />
+              <Button
+                type="submit"
+                disabled={loading || uploading || (isPhysician && !canSubmitPhysician)}
+                className="w-full"
+              >
+                {uploading
+                  ? t("uploadingLoading")
+                  : loading
+                    ? t("registerLoading")
+                    : t("registerBtn")}
+              </Button>
+            </form>
 
-          <div className="mt-6 text-sm text-zinc-600">
-            لديك حساب؟{" "}
-            <Link className="font-medium text-zinc-900" href="/login">
-              تسجيل الدخول
-            </Link>
-          </div>
+            <ImageCropModal
+              open={cropOpen}
+              file={cropFile}
+              title={t("cropTitle")}
+              onClose={() => {
+                setCropOpen(false);
+                setCropFile(null);
+              }}
+              onConfirm={(cropped) => {
+                setCropOpen(false);
+                setCropFile(null);
+                setProfilePhotoFile(cropped);
+                if (profilePhotoPreview) URL.revokeObjectURL(profilePhotoPreview);
+                setProfilePhotoPreview(URL.createObjectURL(cropped));
+                setError(null);
+              }}
+            />
+
+            <div className="mt-6 text-sm text-zinc-600">
+              {t("hasAccount")}{" "}
+              <Link className="font-medium text-zinc-900" href="/login">
+                {t("loginLinkText")}
+              </Link>
+            </div>
           </CardBody>
         </Card>
       </main>
     </div>
   );
 }
-

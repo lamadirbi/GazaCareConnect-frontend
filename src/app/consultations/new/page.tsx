@@ -5,7 +5,8 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { useRequireAuth } from "@/lib/auth";
-import { QUEUE_ASSIGNMENT_LABEL } from "@/features/consultations";
+import { getAssignmentLabels } from "@/lib/i18n";
+import { useLang } from "@/lib/i18n";
 import { uploadMedicalFiles } from "@/lib/medicalFiles";
 import { AppHeader } from "@/components/AppHeader";
 import { AppLoadingScreen } from "@/components/AppLoadingScreen";
@@ -71,14 +72,16 @@ function FormSectionHead({
 }
 
 export default function NewConsultationPage() {
+  const { t } = useLang();
   return (
-    <Suspense fallback={<AppLoadingScreen message="جاري فتح الصفحة..." />}>
+    <Suspense fallback={<AppLoadingScreen message={t("newConsultationOpening")} />}>
       <NewConsultationContent />
     </Suspense>
   );
 }
 
 function NewConsultationContent() {
+  const { t, lang } = useLang();
   const searchParams = useSearchParams();
   const initialMode = searchParams.get("mode") === "direct" ? "direct" : "queue";
   const initialPhysicianId = searchParams.get("physician_id");
@@ -119,6 +122,8 @@ function NewConsultationContent() {
       mounted = false;
     };
   }, [authLoading]);
+
+  const assignmentLabels = getAssignmentLabels(lang);
 
   const selectedPhysician = useMemo(
     () => physicians.find((p) => String(p.user?.id ?? "") === selectedPhysicianId),
@@ -182,16 +187,16 @@ function NewConsultationContent() {
   return (
     <PageLoadingGate
       loading={authLoading || bootLoading}
-      message="جاري تجهيز نموذج الاستشارة..."
+      message={t("newConsultationLoading")}
     >
     <div className="min-h-screen bg-transparent">
-      <AppHeader title="استشارة جديدة" backHref="/consultations" userRole={user?.role} />
+      <AppHeader title={t("newConsultation")} backHref="/consultations" userRole={user?.role} />
 
       <main className="mx-auto w-full max-w-3xl px-4 py-8">
         <header className="mb-6">
-          <h1 className="text-xl font-bold text-foreground">إرسال استشارة</h1>
+          <h1 className="text-xl font-bold text-foreground">{t("sendConsultationTitle")}</h1>
           <p className="mt-1.5 text-sm leading-6 text-(--muted)">
-            اختر طريقة الإرسال، اكتب سؤالك، وأرفق الملفات عند الحاجة.
+{t("sendConsultationDesc")}
           </p>
         </header>
 
@@ -201,8 +206,8 @@ function NewConsultationContent() {
             <div className="p-5 sm:p-6">
               <FormSectionHead
                 step={1}
-                title="طريقة الإرسال"
-                description="لأول طبيب متاح، أو لطبيب تختاره."
+                title={t("assignmentMethod")}
+                description={t("assignmentMethodDesc")}
               />
 
               <div className="gc-assignment-grid">
@@ -213,9 +218,9 @@ function NewConsultationContent() {
                     checked={assignmentMode === "queue"}
                     onChange={() => setAssignmentMode("queue")}
                   />
-                  <span className="gc-assignment-option-title">{QUEUE_ASSIGNMENT_LABEL}</span>
+                  <span className="gc-assignment-option-title">{assignmentLabels.label}</span>
                   <span className="gc-assignment-option-desc">
-                    تبقى بانتظار أول طبيب متاح لاستلامها.
+{t("queueAssignmentHint")}
                   </span>
                 </label>
 
@@ -226,9 +231,9 @@ function NewConsultationContent() {
                     checked={assignmentMode === "direct"}
                     onChange={() => setAssignmentMode("direct")}
                   />
-                  <span className="gc-assignment-option-title">طبيب محدّد</span>
+                  <span className="gc-assignment-option-title">{t("directAssignmentTitle")}</span>
                   <span className="gc-assignment-option-desc">
-                    تُرسل مباشرة إلى الطبيب الذي تختاره.
+{t("directAssignmentDesc")}
                   </span>
                 </label>
               </div>
@@ -236,14 +241,14 @@ function NewConsultationContent() {
               {assignmentMode === "direct" ? (
                 <div className="gc-assignment-direct-panel">
                   <label className="grid gap-2">
-                    <span className="text-xs font-semibold text-(--muted)">اختر الطبيب</span>
+                    <span className="text-xs font-semibold text-(--muted)">{t("choosePhysician")}</span>
                     <select
                       value={selectedPhysicianId}
                       onChange={(e) => setSelectedPhysicianId(e.target.value)}
                       required
                       className="rounded-xl border border-(--border) bg-(--surface) px-3 py-2.5 text-sm"
                     >
-                      <option value="">— اختر من القائمة —</option>
+                      <option value="">{t("chooseFromList")}</option>
                       {physicians.map((p) => (
                         <option key={p.id} value={p.user?.id ?? ""}>
                           {p.user?.name} — {p.specialty}
@@ -255,11 +260,11 @@ function NewConsultationContent() {
                     href="/physicians"
                     className="mt-2 inline-block text-xs font-semibold text-(--gc-accent) hover:underline"
                   >
-                    تصفح الأطباء الموثّقين
+{t("browseVerifiedPhysicians")}
                   </Link>
                   {selectedPhysician ? (
                     <p className="mt-3 rounded-xl border border-sky-200/80 bg-sky-50/80 px-3 py-2.5 text-xs text-sky-900">
-                      ستُرسل إلى د. {selectedPhysician.user?.name}
+                      {t("willSendToDr")} {selectedPhysician.user?.name}
                     </p>
                   ) : null}
                 </div>
@@ -272,8 +277,8 @@ function NewConsultationContent() {
               <div className="p-5 sm:p-6">
                 <FormSectionHead
                   step={2}
-                  title="ملفك الطبي"
-                  description="يُرفق مع الاستشارة. راجع البيانات قبل الإرسال."
+                  title={t("profileAttachedTitle")}
+                  description={t("profileAttachedDesc")}
                 />
                 <MedicalProfileSummaryCard profile={profile} editHref="/profile" embedded />
               </div>
@@ -284,8 +289,8 @@ function NewConsultationContent() {
             <div className="p-5 sm:p-6">
               <FormSectionHead
                 step={profile ? 3 : 2}
-                title="سؤال الاستشارة"
-                description="صف أعراضك أو اكتب سؤالك الطبي."
+                title={t("consultationQuestionTitle")}
+                description={t("consultationQuestionDesc")}
               />
 
               <textarea
@@ -294,13 +299,13 @@ function NewConsultationContent() {
                 rows={7}
                 minLength={10}
                 required
-                placeholder="مثال: صداع منذ أسبوعين مع دوخة عند الوقوف. هل أحتاج فحوصات؟"
+                placeholder={t("consultationQuestionPlaceholder")}
                 className="gc-consult-textarea"
               />
               <p className="mt-2 text-xs text-(--muted)">
                 {charCount < 10
-                  ? `أدخل 10 أحرف على الأقل (${charCount}/10)`
-                  : `${charCount} حرف`}
+                  ? t("minCharsProgress").replace("{count}", String(charCount))
+                  : `${charCount} ${t("charCount")}`}
               </p>
             </div>
           </Card>
@@ -309,18 +314,22 @@ function NewConsultationContent() {
             <div className="min-w-0 p-5 sm:p-6">
               <FormSectionHead
                 step={profile ? 4 : 3}
-                title="مرفقات (اختياري)"
-                description="تقارير، أشعة، أو تحاليل — PDF أو صورة."
+                title={t("attachmentsOptional")}
+                description={t("attachmentsDesc")}
               />
 
               <LocalFilePicker
                 accept="image/*,.pdf"
                 multiple
-                buttonLabel="اختيار ملفات"
+                buttonLabel={t("chooseFiles")}
                 hint={
                   files.length
-                    ? `${files.length} ملف محدد${uploadedFileIds.length ? ` · تم رفع ${uploadedFileIds.length}` : ""}`
-                    : "لم تُختَر ملفات بعد"
+                    ? uploadedFileIds.length
+                      ? t("filesSelectedUploaded")
+                          .replace("{selected}", String(files.length))
+                          .replace("{uploaded}", String(uploadedFileIds.length))
+                      : t("filesSelectedCount").replace("{count}", String(files.length))
+                    : t("noFilesSelected")
                 }
                 onPick={(picked) => {
                   const allowed = picked.filter((f) => {
@@ -333,7 +342,7 @@ function NewConsultationContent() {
                     );
                   });
                   if (allowed.length < picked.length) {
-                    setError("يُسمح فقط بصور أو ملفات PDF.");
+                    setError(t("pdfImagesOnly"));
                   }
                   if (allowed.length) {
                     setFiles((prev) => [...prev, ...allowed]);
@@ -343,7 +352,7 @@ function NewConsultationContent() {
 
               {files.length ? (
                 <div className="mt-4 min-w-0 overflow-hidden rounded-2xl border border-(--border) bg-(--surface-2) p-3 sm:p-4">
-                  <div className="mb-2 text-sm font-semibold text-foreground">الملفات المحددة</div>
+                  <div className="mb-2 text-sm font-semibold text-foreground">{t("selectedFilesTitle")}</div>
                   <SelectedLocalFilesList
                     files={files}
                     onRemoveAt={(idx) => setFiles((prev) => prev.filter((_, i) => i !== idx))}
@@ -360,7 +369,7 @@ function NewConsultationContent() {
               <div className="gc-form-submit-bar">
                 <Link href="/consultations" className="w-full sm:w-auto">
                   <Button variant="secondary" className="w-full sm:w-auto" type="button">
-                    إلغاء
+{t("cancel")}
                   </Button>
                 </Link>
                 <Button
@@ -369,10 +378,10 @@ function NewConsultationContent() {
                   className="w-full sm:w-auto"
                 >
                   {uploading
-                    ? "جاري رفع الملفات..."
+                    ? t("uploadingLoading")
                     : loading
-                      ? "جاري الإرسال..."
-                      : "إرسال الاستشارة"}
+                      ? t("sendingConsultation")
+                      : t("sendConsultationBtn")}
                 </Button>
               </div>
             </div>

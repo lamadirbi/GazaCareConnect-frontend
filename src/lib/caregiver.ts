@@ -1,18 +1,22 @@
+import { getCaregiverRelationshipLabel, type Lang } from "@/lib/i18n";
+
 export const CAREGIVER_RELATIONSHIPS = [
-  { value: "son", label: "ابن" },
-  { value: "daughter", label: "ابنة" },
-  { value: "spouse", label: "زوج/ة" },
-  { value: "father", label: "أب" },
-  { value: "mother", label: "أم" },
-  { value: "brother", label: "أخ" },
-  { value: "sister", label: "أخت" },
+  { value: "son" },
+  { value: "daughter" },
+  { value: "spouse" },
+  { value: "father" },
+  { value: "mother" },
+  { value: "brother" },
+  { value: "sister" },
 ] as const;
 
 export type CaregiverRelationship = (typeof CAREGIVER_RELATIONSHIPS)[number]["value"];
 
-export function caregiverRelationshipLabel(value: string | null | undefined): string | null {
-  if (!value) return null;
-  return CAREGIVER_RELATIONSHIPS.find((r) => r.value === value)?.label ?? null;
+export function caregiverRelationshipLabel(
+  value: string | null | undefined,
+  lang: Lang = "ar",
+): string | null {
+  return getCaregiverRelationshipLabel(lang, value);
 }
 
 export type CaregiverPatientInfo = {
@@ -21,9 +25,12 @@ export type CaregiverPatientInfo = {
   caregiver_relationship?: string | null;
 };
 
-export function formatPatientWithRelationship(patient: CaregiverPatientInfo): string {
+export function formatPatientWithRelationship(
+  patient: CaregiverPatientInfo,
+  lang: Lang = "ar",
+): string {
   if (patient.caregiver_mode_enabled && patient.caregiver_relationship) {
-    const label = caregiverRelationshipLabel(patient.caregiver_relationship);
+    const label = caregiverRelationshipLabel(patient.caregiver_relationship, lang);
     if (label) return `${patient.name} (${label})`;
   }
   return patient.name;

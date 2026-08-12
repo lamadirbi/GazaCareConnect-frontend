@@ -28,6 +28,7 @@ import {
 } from "@/features/consultations";
 import { CaseSeverityBadge } from "@/components/CaseSeverityBadge";
 import { physicianPhotoFileId } from "@/features/physician/physicianPhoto";
+import { useLang } from "@/lib/i18n";
 
 function normalizeMessages(raw: ConsultationDetail): ConsultationMessage[] {
   const list = (raw.messages ?? []) as ConsultationMessage[];
@@ -49,6 +50,7 @@ function normalizeMessages(raw: ConsultationDetail): ConsultationMessage[] {
 }
 
 export default function ConsultationDetailPage() {
+  const { t } = useLang();
   const { user, loading: authLoading } = useRequireAuth();
   const params = useParams<{ id: string }>();
   const id = useMemo(() => Number(params.id), [params.id]);
@@ -108,7 +110,7 @@ export default function ConsultationDetailPage() {
       .catch(() => {
         if (!mounted.current) return;
         setLoading(false);
-        setError("فشل تحميل الاستشارة");
+        setError(t("consultationLoadError"));
       });
   }, [id, mounted]);
 
@@ -131,7 +133,7 @@ export default function ConsultationDetailPage() {
     if (!consultation) return;
     const text = editText.trim();
     if (text.length < 10) {
-      setError("نص الاستشارة يجب أن يكون 10 أحرف على الأقل.");
+      setError(t("questionMinLength"));
       return;
     }
 
@@ -181,10 +183,10 @@ export default function ConsultationDetailPage() {
   return (
     <PageLoadingGate
       loading={authLoading || loading}
-      message="جاري تحميل تفاصيل الاستشارة..."
+      message={t("consultationDetailLoading")}
     >
     <div className="min-h-screen bg-transparent">
-      <AppHeader title="تفاصيل الاستشارة" backHref="/consultations" userRole={user?.role} />
+      <AppHeader title={t("consultationDetailTitle")} backHref="/consultations" userRole={user?.role} />
 
       <main className="mx-auto w-full max-w-3xl px-4 py-8">
         {error ? (
@@ -211,13 +213,13 @@ export default function ConsultationDetailPage() {
                   <div className="mt-4 border-t border-(--border) pt-4">
                     {!editing ? (
                       <Button type="button" variant="secondary" size="sm" onClick={startEditing}>
-                        تعديل الاستشارة
+{t("editConsultation")}
                       </Button>
                     ) : (
                       <div className="grid gap-4">
                         <div className="grid gap-2">
                           <label className="text-sm font-medium" htmlFor="edit-question">
-                            نص الاستشارة
+{t("consultationTextLabel")}
                           </label>
                           <textarea
                             id="edit-question"
@@ -230,9 +232,9 @@ export default function ConsultationDetailPage() {
                         </div>
 
                         <div className="grid gap-2">
-                          <div className="text-sm font-medium">المرفقات الطبية</div>
+                          <div className="text-sm font-medium">{t("medicalAttachments")}</div>
                           <p className="text-xs text-(--muted)">
-                            احذفي مرفقاً أو أضيفي تقارير/صور قبل رد الطبيب.
+{t("editAttachmentsHint")}
                           </p>
 
                           {keptFiles.length > 0 ? (
@@ -247,7 +249,7 @@ export default function ConsultationDetailPage() {
                                       {f.original_name}
                                     </div>
                                     <div className="text-xs text-(--muted)">
-                                      {f.file_kind || f.mime_type || "مرفق"}
+                                      {f.file_kind || f.mime_type || t("attachment")}
                                     </div>
                                   </div>
                                   <Button
@@ -259,24 +261,24 @@ export default function ConsultationDetailPage() {
                                       setKeptFiles((prev) => prev.filter((x) => x.id !== f.id))
                                     }
                                   >
-                                    إزالة
+{t("remove")}
                                   </Button>
                                 </li>
                               ))}
                             </ul>
                           ) : (
-                            <p className="text-xs text-(--muted)">لا توجد مرفقات حالياً.</p>
+                            <p className="text-xs text-(--muted)">{t("noAttachmentsNow")}</p>
                           )}
 
                           <LocalFilePicker
                             className="mt-1"
                             accept="image/*,.pdf"
                             multiple
-                            buttonLabel="اختيار ملفات"
+                            buttonLabel={t("chooseFiles")}
                             hint={
                               newFiles.length
-                                ? `${newFiles.length} ملف جديد قيد الإضافة`
-                                : "أضيفي مرفقات جديدة (اختياري)"
+                                ? `${newFiles.length} ${t("newFilesAdding")}`
+                                : t("addNewAttachments")
                             }
                             onPick={(picked) => {
                               if (savingEdit) return;
@@ -290,7 +292,7 @@ export default function ConsultationDetailPage() {
                                 );
                               });
                               if (allowed.length < picked.length) {
-                                setError("يُسمح فقط بصور أو ملفات PDF.");
+                                setError(t("pdfImagesOnly"));
                               }
                               if (allowed.length) {
                                 setNewFiles((prev) => [...prev, ...allowed]);
@@ -301,7 +303,7 @@ export default function ConsultationDetailPage() {
                           {newFiles.length > 0 ? (
                             <div className="min-w-0 overflow-hidden rounded-2xl border border-(--border) bg-(--surface-2) p-3 sm:p-4">
                               <div className="mb-2 text-sm font-semibold text-foreground">
-                                ملفات جديدة
+{t("newFilesTitle")}
                               </div>
                               <SelectedLocalFilesList
                                 files={newFiles}
@@ -315,7 +317,7 @@ export default function ConsultationDetailPage() {
 
                         <div className="flex flex-wrap gap-2">
                           <Button type="button" size="sm" onClick={saveEdit} disabled={savingEdit}>
-                            {savingEdit ? "جاري الحفظ..." : "حفظ التعديل"}
+{savingEdit ? t("saving") : t("saveChanges")}
                           </Button>
                           <Button
                             type="button"
@@ -324,7 +326,7 @@ export default function ConsultationDetailPage() {
                             onClick={cancelEditing}
                             disabled={savingEdit}
                           >
-                            إلغاء
+{t("cancel")}
                           </Button>
                         </div>
                       </div>
@@ -339,9 +341,9 @@ export default function ConsultationDetailPage() {
                 <CardBody className="p-5 sm:p-6">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <div className="gc-section-label">المرفقات الطبية</div>
+                      <div className="gc-section-label">{t("medicalAttachments")}</div>
                       <p className="mt-1 text-xs text-(--muted)">
-                        {files.length} ملف(ات) مرفقة مع الاستشارة
+{files.length} {t("filesAttachedCount")}
                       </p>
                     </div>
                   </div>
@@ -361,7 +363,7 @@ export default function ConsultationDetailPage() {
                 <CardBody className="p-5 sm:p-6">
                   {consultation.physician && hasPhysicianReply ? (
                     <p className="mb-3 text-sm text-(--muted)">
-                      الدكتور/ة:{" "}
+{t("doctorPrefix")}{" "}
                       <button
                         type="button"
                         onClick={() => setPhysicianModalOpen(true)}
@@ -383,7 +385,7 @@ export default function ConsultationDetailPage() {
                     physicianName={consultation.physician?.name ?? null}
                     submitting={replying}
                     onSubmitReply={sendReply}
-                    replyPlaceholder="اكتب سؤالاً متابعة أو توضيحاً للطبيب..."
+                    replyPlaceholder={t("followUpPlaceholder")}
                   />
                 </CardBody>
               </Card>
@@ -394,12 +396,12 @@ export default function ConsultationDetailPage() {
                 href="/consultations"
                 className="text-sm font-medium text-(--gc-accent) hover:underline"
               >
-                العودة إلى قائمة الاستشارات
+{t("backToConsultations")}
               </Link>
             </div>
           </div>
         ) : !error ? (
-          <Alert variant="info">لم يتم العثور على الاستشارة.</Alert>
+          <Alert variant="info">{t("consultationNotFound")}</Alert>
         ) : null}
       </main>
 

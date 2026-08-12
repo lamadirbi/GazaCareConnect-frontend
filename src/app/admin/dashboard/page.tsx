@@ -8,10 +8,12 @@ import { AppHeader } from "@/components/AppHeader";
 import { PageLoadingGate } from "@/components/PageLoadingGate";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
+import { useLang } from "@/lib/i18n";
 
 type Paginated<T> = { data: T[]; total?: number };
 
 export default function AdminDashboardPage() {
+  const { t } = useLang();
   const { user, loading: authLoading } = useRequireAuth({ allowedRoles: ["admin"] });
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [usersCount, setUsersCount] = useState<number | null>(null);
@@ -34,49 +36,46 @@ export default function AdminDashboardPage() {
   }, []);
 
   return (
-    <PageLoadingGate
-      loading={authLoading || statsLoading}
-      message="جاري تحميل لوحة المدير..."
-    >
+    <PageLoadingGate loading={authLoading || statsLoading} message={t("adminDashboardLoading")}>
     <div className="min-h-screen bg-transparent">
-      <AppHeader title="لوحة المدير" backHref="/" userRole={user?.role} />
+      <AppHeader title={t("adminDashboardTitle")} backHref="/" userRole={user?.role} />
 
       <main className="mx-auto w-full max-w-5xl px-4 py-8">
         <Card>
           <CardBody className="p-6">
-            <h1 className="text-xl font-semibold text-zinc-900">لوحة المدير</h1>
+            <h1 className="text-xl font-semibold text-zinc-900">{t("adminDashboardTitle")}</h1>
             <p className="mt-1 text-sm text-zinc-600">
-              أهلاً {user?.name} — إدارة المستخدمين وتوثيق الأطباء.
+              {t("welcome")} {user?.name} — {t("adminWelcomeDesc")}
             </p>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <Card className="hover:brightness-[1.03]">
                 <CardBody className="p-5">
-                  <div className="text-sm text-zinc-500">طلبات توثيق أطباء</div>
+                  <div className="text-sm text-zinc-500">{t("adminPendingPhysicians")}</div>
                   <div className="mt-1 text-2xl font-semibold text-zinc-900">
                     {pendingCount ?? "..."}
                   </div>
                   <Link href="/admin/physicians" className="mt-4 inline-block text-sm font-semibold text-(--gc-accent)">
-                    مراجعة الطلبات
+                    {t("adminReviewRequests")}
                   </Link>
                 </CardBody>
               </Card>
 
               <Card className="hover:brightness-[1.03]">
                 <CardBody className="p-5">
-                  <div className="text-sm text-zinc-500">المستخدمون</div>
+                  <div className="text-sm text-zinc-500">{t("adminUsersCard")}</div>
                   <div className="mt-1 text-2xl font-semibold text-zinc-900">
                     {usersCount ?? "..."}
                   </div>
                   <Link href="/admin/users" className="mt-4 inline-block text-sm font-semibold text-(--gc-accent)">
-                    إدارة المستخدمين
+                    {t("adminManageUsers")}
                   </Link>
                 </CardBody>
               </Card>
             </div>
 
             <Alert variant="info" className="mt-6">
-              يمكنك تعطيل حسابات المراجعين والأطباء، ومراجعة شهادات الأطباء الجدد قبل السماح لهم بالعمل.
+              {t("adminInfoAlert")}
             </Alert>
           </CardBody>
         </Card>

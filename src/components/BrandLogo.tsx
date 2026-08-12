@@ -1,13 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { useLang } from "@/lib/i18n";
 
 type Props = {
   href?: string;
-  /** ارتفاع الشعار */
   size?: "sm" | "md" | "lg" | "xl";
   showTitle?: boolean;
   showTagline?: boolean;
   className?: string;
-  /** عند false يُعرض الشعار فقط (مثل شريط التطبيق) */
   withLink?: boolean;
 };
 
@@ -40,6 +41,8 @@ export function BrandLogo({
   className = "",
   withLink = true,
 }: Props) {
+  const { t } = useLang();
+
   const inner = (
     <>
       <img
@@ -53,7 +56,7 @@ export function BrandLogo({
             <div className={titleClass[size]}>GazaCare Connect</div>
           ) : null}
           {showTagline ? (
-            <div className={taglineClass[size]}>جسر طبي عن بُعد</div>
+            <div className={taglineClass[size]}>{t("brandTagline")}</div>
           ) : null}
         </div>
       )}
