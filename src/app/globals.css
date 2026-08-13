@@ -1254,9 +1254,12 @@ textarea::placeholder {
   inset: 0;
   z-index: 100;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   background: rgba(11, 18, 32, 0.5);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
@@ -1264,6 +1267,8 @@ textarea::placeholder {
 
 .gc-confirm-modal {
   width: min(100%, 22rem);
+  margin: auto;
+  flex-shrink: 0;
   border-radius: 20px;
   border: 1px solid var(--border);
   background: var(--surface-2);

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import { CAREGIVER_RELATIONSHIPS, type CaregiverRelationship } from "@/lib/caregiver";
 import { getCaregiverRelationshipLabel, useLang } from "@/lib/i18n";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 type Props = {
   open: boolean;
@@ -44,14 +45,7 @@ export function CaregiverModeModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
+  useBodyScrollLock(open);
 
   if (!open || !mounted) return null;
 
@@ -65,7 +59,7 @@ export function CaregiverModeModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="gc-confirm-modal" onMouseDown={(e) => e.stopPropagation()}>
+      <div className="gc-confirm-modal w-full max-w-sm" onMouseDown={(e) => e.stopPropagation()}>
         <h2 id="gc-caregiver-modal-title" className="gc-confirm-modal-title">
           {t("caregiverModalTitle")}
         </h2>

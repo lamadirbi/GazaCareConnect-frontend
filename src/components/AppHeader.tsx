@@ -57,7 +57,7 @@ function dashboardHomeHref(role: string) {
 }
 
 export function AppHeader({ title, backHref, showBack = true, rightSlot, userRole, primaryAction }: Props) {
-  const { t, lang } = useLang();
+  const { t, lang, dir } = useLang();
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -215,7 +215,7 @@ export function AppHeader({ title, backHref, showBack = true, rightSlot, userRol
             title={t("navBack")}
           >
             <span className="gc-back-btn-icon" aria-hidden>
-              <FaIcon icon="chevron-right" className="text-sm" />
+              <FaIcon icon={dir === "rtl" ? "chevron-right" : "chevron-left"} className="text-sm" />
             </span>
           </button>
         ) : null}

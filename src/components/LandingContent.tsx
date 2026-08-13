@@ -72,7 +72,7 @@ export function LandingContent({ platformStats }: { platformStats: PlatformStats
 
                 <h1 className="mt-5 text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-[2.6rem]">
                   {t("heroTitle")}
-                  <span className="mt-2 block bg-gradient-to-l from-(--gc-accent) to-[#0b6e7a] bg-clip-text text-transparent">
+                  <span className="mt-2 block text-(--gc-accent)">
                     {t("heroTitleHighlight")}
                   </span>
                 </h1>
